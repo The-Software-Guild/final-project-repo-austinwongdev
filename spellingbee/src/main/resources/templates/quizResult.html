@@ -14,6 +14,8 @@
     <!-- Main Body of Page -->
 
     <div class="container">
+        
+        <!-- Title and Menu -->
         <div class="row m-4">
             <div class="col text-center">
                 <h1><a href="/">Spelling Bee</a></h1>
@@ -29,6 +31,57 @@
         </div>
         
         <hr>
+        
+        <!-- Quiz results as text-->
+        <div class="row m-4">
+            <div class="col text-left">
+                <h3 th:text="'Quiz #' + ${attempt.quizId}">Quiz Results</h3>
+            </div>
+        </div>        
+        <div class="row m-4">
+            <div class="col text-left m-2">
+                <span th:text="${#temporals.format(attempt.attemptDate, 'M/d/yyyy')}">Date</span>
+            </div>
+        </div>
+        <div class="row m-4">
+            <div class="col text-left m-2">
+                <span th:text="${#numbers.formatDecimal(attempt.percentScore,0,0)}+'%'">Score</span>
+            </div>
+        </div>
+        <div class="row m-4">
+            <div class="col text-left m-2">
+                <span th:text="'Correct: ' + ${numCorrect}"># Correct</span>
+            </div>
+        </div>
+        <div class="row m-4">
+            <div class="col text-left m-2">
+                <span th:text="'Incorrect: ' + ${numIncorrect}"># Incorrect</span>
+            </div>
+        </div>
+        
+        
+        <!-- Table showing Words alongside Guesses -->
+        <div class="row m-4">
+            <div class="col text-center m-3">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <!--<th>#</th>-->
+                            <th>Word</th>
+                            <th>Guess</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="attempt : ${attempts}">
+<!--                            <td th:text="${attempt.quizId}">#</td>-->
+                            <td th:text="${attempt.attemptDate}">Word</td>
+                            <td th:text="${attempt.percentScore}">Guess</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
     </div> 
     
     <!-- End main body -->

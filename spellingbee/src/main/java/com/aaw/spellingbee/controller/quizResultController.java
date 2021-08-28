@@ -7,6 +7,8 @@
 
 package com.aaw.spellingbee.controller;
 
+import com.aaw.spellingbee.model.Attempt;
+import java.time.LocalDate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,24 @@ public class QuizResultController {
 
     @GetMapping("quizResult")
     public String displayQuizResult(int id, Model model){
+        
+        // *** Fake code to get webpage temporarily running
+        Attempt attempt = new Attempt();
+        attempt.setAttemptDate(LocalDate.now());
+        attempt.setAttemptId(id);
+        attempt.setQuizId(id);
+        attempt.setPercentScore(40);
+        model.addAttribute("attempt", attempt);
+        model.addAttribute("numCorrect", 2);
+        model.addAttribute("numIncorrect", 3);
+        // *** End fake code
+        
         return "quizResult";
+    }
+    
+    @GetMapping("deleteQuizResult")
+    public String deleteQuizResult(int id){
+        return "history";
     }
     
 }

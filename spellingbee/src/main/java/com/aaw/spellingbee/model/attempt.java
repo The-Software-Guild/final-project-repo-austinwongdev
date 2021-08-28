@@ -21,6 +21,15 @@ public class Attempt {
     private LocalDate attemptDate;
     private int quizId;
     private List<Guess> guesses;
+    private float percentScore;
+
+    public float getPercentScore() {
+        return percentScore;
+    }
+
+    public void setPercentScore(float percentScore) {
+        this.percentScore = percentScore;
+    }
 
     public int getAttemptId() {
         return attemptId;
@@ -57,10 +66,11 @@ public class Attempt {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 59 * hash + this.attemptId;
-        hash = 59 * hash + Objects.hashCode(this.attemptDate);
-        hash = 59 * hash + this.quizId;
-        hash = 59 * hash + Objects.hashCode(this.guesses);
+        hash = 67 * hash + this.attemptId;
+        hash = 67 * hash + Objects.hashCode(this.attemptDate);
+        hash = 67 * hash + this.quizId;
+        hash = 67 * hash + Objects.hashCode(this.guesses);
+        hash = 67 * hash + Float.floatToIntBits(this.percentScore);
         return hash;
     }
 
@@ -80,6 +90,9 @@ public class Attempt {
             return false;
         }
         if (this.quizId != other.quizId) {
+            return false;
+        }
+        if (Float.floatToIntBits(this.percentScore) != Float.floatToIntBits(other.percentScore)) {
             return false;
         }
         if (!Objects.equals(this.attemptDate, other.attemptDate)) {
