@@ -11,6 +11,6 @@ package com.aaw.spellingbee.service;
  *
  * @author Austin Wong
  */
-public class spellingBeeService {
+public class SpellingBeeService {
 
 }

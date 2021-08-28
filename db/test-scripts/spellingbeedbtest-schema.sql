@@ -26,7 +26,7 @@ CREATE TABLE quizword (
 CREATE TABLE attempt (
 	attemptId INT NOT NULL AUTO_INCREMENT,
     quizId INT NOT NULL,
-    date DATE NOT NULL,
+    attemptDate DATE NOT NULL,
     CONSTRAINT pk_attempt PRIMARY KEY (attemptId),
     CONSTRAINT fk_attempt_quiz FOREIGN KEY (quizId)
 		REFERENCES quiz (quizId)

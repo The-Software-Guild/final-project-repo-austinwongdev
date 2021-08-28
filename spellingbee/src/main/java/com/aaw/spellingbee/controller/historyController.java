@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 
 @Controller
-public class historyController {
+public class HistoryController {
 
     @GetMapping("history")
     public String displayHistory(){

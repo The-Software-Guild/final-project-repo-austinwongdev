@@ -11,6 +11,6 @@ package com.aaw.spellingbee.dao;
  *
  * @author Austin Wong
  */
-public interface wordDao {
+public interface WordDao {
 
 }

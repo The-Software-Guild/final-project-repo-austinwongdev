@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 
 @Controller
-public class quizResultController {
+public class QuizResultController {
 
     @GetMapping("quizResult")
     public String displayQuizResult(int id, Model model){
