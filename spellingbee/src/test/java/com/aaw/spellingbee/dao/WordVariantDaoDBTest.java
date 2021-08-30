@@ -129,7 +129,7 @@ public class WordVariantDaoDBTest {
         word1Variant1.setWordVariantId(fromDao.getWordVariantId());
         assertEquals(word1Variant1, fromDao);
         
-        fromDao = wordVariantDao.getWordVariant(word1Variant1.getWordVariantId());
+        fromDao = wordVariantDao.getWordVariantByWordVariantId(word1Variant1.getWordVariantId());
         assertNotNull(fromDao);
         assertEquals(word1Variant1, fromDao);
         
@@ -185,7 +185,7 @@ public class WordVariantDaoDBTest {
         
         // Add a word variant to the database
         word1Variant1 = wordVariantDao.addWordVariant(word1Variant1);
-        WordVariant fromDao = wordVariantDao.getWordVariant(word1Variant1.getWordVariantId());
+        WordVariant fromDao = wordVariantDao.getWordVariantByWordVariantId(word1Variant1.getWordVariantId());
         assertNotNull(fromDao);
         assertEquals(word1Variant1, fromDao);
         
@@ -193,7 +193,7 @@ public class WordVariantDaoDBTest {
         wordVariantDao.deleteWordVariant(word1Variant1.getWordVariantId());
         
         // Try to get word variant from database (should fail)
-        fromDao = wordVariantDao.getWordVariant(word1Variant1.getWordVariantId());
+        fromDao = wordVariantDao.getWordVariantByWordVariantId(word1Variant1.getWordVariantId());
         assertNull(fromDao);
         
     }

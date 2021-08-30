@@ -19,10 +19,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -31,7 +29,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 
 @SpringBootTest
-public class WordDaoDBTest {
+public class GuessDaoDBTest {
     
     @Autowired
     JdbcTemplate jdbc;
@@ -62,7 +60,7 @@ public class WordDaoDBTest {
     private Guess guess1;
     private Guess guess2;
     
-    public WordDaoDBTest() {
+    public GuessDaoDBTest() {
     }
     
     @BeforeAll
@@ -168,6 +166,7 @@ public class WordDaoDBTest {
         // Link guesses to attempts and attempts to quizzes
         attempt1.setGuesses(new ArrayList<>(Arrays.asList(guess1, guess2)));
         quiz1.setAttempts(new ArrayList<>(Arrays.asList(attempt1)));
+        
     }
     
     @AfterEach
@@ -175,119 +174,38 @@ public class WordDaoDBTest {
     }
 
     /**
-     * Test of addWord and getWord methods, of class WordDaoDB.
+     * Test of getGuessesForAttemptId method, of class GuessDaoDB.
      */
     @Test
-    public void testAddAndGetWord() {
-        
-        // Ensure word is added to retrieved from db
-        word2 = wordDao.addWord(word2);
-        
-        Word wordFromDao = wordDao.getWordByWordId(word2.getWordId());
-        
-        assertNotNull(wordFromDao);
-        assertEquals(word2, wordFromDao);
-        
-        // Ensure wordvariants are added too
-        List<WordVariant> wordVariants = wordVariantDao.getWordVariantsForWordId(word2.getWordId());
-        assertEquals(2, wordVariants.size());
-        
-        // No longer applicable - handled at service layer not at dao layer
-//        // Ensure word variants are added to and retrieved from db
-//        List<WordVariant> wordVariantsFromDao = wordVariantDao.getWordVariantsForWordId(word2.getWordId());
-//        assertEquals(wordVariantsFromDao.size(), word2.getWordVariants().size());
-//        assertEquals(word2.getWordVariants(), wordVariantsFromDao);
-        
-    }
-    
-    @Test
-    public void testAddExistingWord() {
-        
-        word1 = wordDao.addWord(word1);
-        
-        Word wordFromDao = wordDao.getWordByWordId(word1.getWordId());
-        assertNotNull(wordFromDao);
-        assertEquals(word1, wordFromDao);
-        
-        // Try adding same word
-        wordFromDao = wordDao.addWord(word1);
-        assertNotNull(wordFromDao);
-        assertEquals(word1, wordFromDao);
-        wordFromDao = wordDao.getWordByWordId(wordFromDao.getWordId());
-        assertNotNull(wordFromDao);
-        assertEquals(word1, wordFromDao);
+    public void testGetGuessesForAttemptId() {
     }
 
     /**
-     * Test of getWordsForQuizId method, of class WordDaoDB.
+     * Test of getAllGuesses method, of class GuessDaoDB.
      */
     @Test
-    public void testGetWordsForQuizId() {
-        
-        // Add quiz to db (words in quiz object are added to db in addQuiz())
-        quiz1 = quizDao.addQuiz(quiz1);
-        
-        List<Word> wordsForQuizFromDao = wordDao.getWordsForQuizId(quiz1.getQuizId());
-        assertEquals(2, wordsForQuizFromDao.size());
-        assertTrue(wordsForQuizFromDao.contains(word1));
-        assertTrue(wordsForQuizFromDao.contains(word2));
-        assertFalse(wordsForQuizFromDao.contains(word3));
-        
+    public void testGetAllGuesses() {
     }
 
     /**
-     * Test of deleteWord method, of class WordDaoDB.
+     * Test of deleteGuess method, of class GuessDaoDB.
      */
     @Test
-    public void testDeleteWord() {
-        
-        // Add words and guess to db (which requires adding a quiz and attempt)
-        // Attempts and guesses should be added in addQuiz()
-        quiz1 = quizDao.addQuiz(quiz1);
-        
-        // Ensure word2 was added
-        Word wordFromDao = wordDao.getWordByWordId(word2.getWordId());
-        assertNotNull(wordFromDao);
-        assertEquals(word2, wordFromDao);
-        
-        // Ensure word2 is deleted from word table
-        wordDao.deleteWord(word2.getWordId());
-        wordFromDao = wordDao.getWordByWordId(word2.getWordId());
-        assertNull(wordFromDao);
-        
-        // Ensure word variants (for word2) are deleted from wordvariant table
-        List<WordVariant> wordVariantsFromDao = wordVariantDao.getWordVariantsForWordId(word2.getWordId());
-        assertEquals(0, wordVariantsFromDao.size());
-        
-        // Ensure guesses (for word2) are deleted from guess table
-        List<Guess> guessesFromDao = guessDao.getGuessesForAttemptId(attempt1.getAttemptId());
-        assertEquals(1, guessesFromDao.size());
-        assertTrue(guessesFromDao.contains(guess1));
-        assertFalse(guessesFromDao.contains(guess2));
-        
-        // Ensure entries in quizword table for word2 are deleted
-        final String SELECT_QUIZWORDS_BY_WORD_ID = "SELECT COUNT(*) FROM quizword WHERE "
-                + "wordId = ?";
-        int numEntriesInQuizWordTable = jdbc.queryForObject(SELECT_QUIZWORDS_BY_WORD_ID, Integer.class, word2.getWordId());
-        assertEquals(0, numEntriesInQuizWordTable);
-        
+    public void testDeleteGuess() {
     }
 
     /**
-     * Test of getAllWords method, of class WordDaoDB.
+     * Test of addGuess method, of class GuessDaoDB.
      */
     @Test
-    public void testGetAllWords() {
-        
-        word1 = wordDao.addWord(word1);
-        word2 = wordDao.addWord(word2);
-        
-        List<Word> words = wordDao.getAllWords();
-        
-        assertEquals(2, words.size());
-        assertTrue(words.contains(word1));
-        assertTrue(words.contains(word2));
-        
+    public void testAddGuess() {
+    }
+
+    /**
+     * Test of getGuessByGuessId method, of class GuessDaoDB.
+     */
+    @Test
+    public void testGetGuessByGuessId() {
     }
     
 }

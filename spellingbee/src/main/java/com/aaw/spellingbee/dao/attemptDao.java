@@ -17,6 +17,7 @@ import java.util.List;
 public interface AttemptDao {
 
     Attempt addAttempt(Attempt attempt);
+    Attempt getAttemptByAttemptId(int attemptId);
     List<Attempt> getAttemptsForQuizId(int quizId);
     List<Attempt> getAllAttempts();
     void deleteAttempt(int attemptId);

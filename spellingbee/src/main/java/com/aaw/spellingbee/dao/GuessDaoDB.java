@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -31,14 +32,14 @@ public class GuessDaoDB implements GuessDao {
     @Override
     public List<Guess> getGuessesForAttemptId(int attemptId) {
         final String SELECT_GUESSES_FOR_ATTEMPT = "SELECT * FROM guess "
-                + "WHERE attemptId = ?";
+                + "WHERE attemptId = ? ORDER BY guessId";
         List<Guess> guesses = jdbc.query(SELECT_GUESSES_FOR_ATTEMPT, new GuessMapper(), attemptId);
         return guesses;
     }
     
     @Override
     public List<Guess> getAllGuesses() {
-        final String SELECT_ALL_GUESSES = "SELECT * FROM guess";
+        final String SELECT_ALL_GUESSES = "SELECT * FROM guess ORDER BY guessId";
         List<Guess> guesses = jdbc.query(SELECT_ALL_GUESSES, new GuessMapper());
         return guesses;
     }
@@ -63,6 +64,18 @@ public class GuessDaoDB implements GuessDao {
         int guessId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
         guess.setGuessId(guessId);
         return guess;
+    }
+
+    @Override
+    public Guess getGuessByGuessId(int guessId) {
+        try{
+            final String GET_GUESSES_BY_GUESS_ID = "SELECT * FROM guess WHERE guessId = ?";
+            Guess guess = jdbc.queryForObject(GET_GUESSES_BY_GUESS_ID, new GuessMapper(), guessId);
+            return guess;
+            
+        } catch (DataAccessException ex){
+            return null;
+        }
     }
     
     public static final class GuessMapper implements RowMapper<Guess> {

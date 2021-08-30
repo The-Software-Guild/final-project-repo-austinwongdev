@@ -17,6 +17,7 @@ import java.util.List;
 public interface GuessDao {
 
     Guess addGuess(Guess guess);
+    Guess getGuessByGuessId(int guessId);
     List<Guess> getGuessesForAttemptId(int attemptId);
     List<Guess> getAllGuesses();
     void deleteGuess(int guessId);

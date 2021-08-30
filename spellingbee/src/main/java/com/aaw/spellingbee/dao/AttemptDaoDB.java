@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -55,7 +56,7 @@ public class AttemptDaoDB implements AttemptDao {
 
     @Override
     public List<Attempt> getAllAttempts() {
-        final String SELECT_ALL_ATTEMPTS = "SELECT * FROM attempt";
+        final String SELECT_ALL_ATTEMPTS = "SELECT * FROM attempt ORDER BY attemptId";
         List<Attempt> attempts = jdbc.query(SELECT_ALL_ATTEMPTS, new AttemptMapper());
         
         // Set guesses
@@ -69,7 +70,7 @@ public class AttemptDaoDB implements AttemptDao {
     @Override
     public List<Attempt> getAttemptsForQuizId(int quizId){
         final String SELECT_ATTEMPTS_FOR_QUIZ = "SELECT * FROM attempt "
-                + "WHERE quizId = ?";
+                + "WHERE quizId = ? ORDER BY attemptId";
         List<Attempt> attempts = jdbc.query(SELECT_ATTEMPTS_FOR_QUIZ, new AttemptMapper(), quizId);
         
         // Set guesses
@@ -97,6 +98,19 @@ public class AttemptDaoDB implements AttemptDao {
         
         final String DELETE_ATTEMPT = "DELETE FROM attempt WHERE attemptId = ?";
         jdbc.update(DELETE_ATTEMPT, attemptId);
+    }
+
+    @Override
+    public Attempt getAttemptByAttemptId(int attemptId) {
+        try{
+            final String GET_ATTEMPT_BY_ATTEMPT_ID = "SELECT * FROM attempt WHERE attmemptId = ?";
+            Attempt attempt = jdbc.queryForObject(GET_ATTEMPT_BY_ATTEMPT_ID, new AttemptMapper(), attemptId);
+            setGuessesForAttempt(attempt);
+            return attempt;
+            
+        } catch (DataAccessException ex){
+            return null;
+        }
     }
 
     public static final class AttemptMapper implements RowMapper<Attempt> {

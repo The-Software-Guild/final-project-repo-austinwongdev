@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface WordVariantDao {
 
-    WordVariant getWordVariant(int wordVariantId);
+    WordVariant getWordVariantByWordVariantId(int wordVariantId);
     List<WordVariant> getWordVariantsForWordId(String wordId);
     List<WordVariant> getAllWordVariants();
     WordVariant addWordVariant(WordVariant wordVariant);

@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface WordDao {
 
-    Word getWord(String wordId);
+    Word getWordByWordId(String wordId);
     List<Word> getWordsForQuizId(int quizId);
     List<Word> getAllWords();
     Word addWord(Word word);

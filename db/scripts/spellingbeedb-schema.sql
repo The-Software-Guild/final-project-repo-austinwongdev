@@ -25,6 +25,7 @@ CREATE TABLE wordvariant (
 CREATE TABLE quizword (
 	quizId INT NOT NULL,
     wordId VARCHAR(52) NOT NULL,
+    questionNumber INT NOT NULL,
     CONSTRAINT pk_quizword PRIMARY KEY (quizId, wordId),
     CONSTRAINT fk_quizword_quiz FOREIGN KEY (quizId)
 		REFERENCES quiz (quizId),

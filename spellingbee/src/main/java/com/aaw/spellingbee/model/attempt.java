@@ -66,11 +66,10 @@ public class Attempt {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + this.attemptId;
-        hash = 67 * hash + Objects.hashCode(this.attemptDate);
-        hash = 67 * hash + this.quizId;
-        hash = 67 * hash + Objects.hashCode(this.guesses);
-        hash = 67 * hash + Float.floatToIntBits(this.percentScore);
+        hash = 97 * hash + this.attemptId;
+        hash = 97 * hash + Objects.hashCode(this.attemptDate);
+        hash = 97 * hash + this.quizId;
+        hash = 97 * hash + Objects.hashCode(this.guesses);
         return hash;
     }
 
@@ -92,9 +91,6 @@ public class Attempt {
         if (this.quizId != other.quizId) {
             return false;
         }
-        if (Float.floatToIntBits(this.percentScore) != Float.floatToIntBits(other.percentScore)) {
-            return false;
-        }
         if (!Objects.equals(this.attemptDate, other.attemptDate)) {
             return false;
         }
@@ -103,5 +99,7 @@ public class Attempt {
         }
         return true;
     }
+
+    
     
 }

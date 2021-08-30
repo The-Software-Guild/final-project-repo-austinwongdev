@@ -17,6 +17,7 @@ import java.util.List;
 public interface QuizDao {
 
     Quiz addQuiz(Quiz quiz);
+    Quiz getQuizByQuizId(int quizId);
     List<Quiz> getAllQuizzes();
     void deleteQuiz(int quizId);
     

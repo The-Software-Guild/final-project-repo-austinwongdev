@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -48,14 +49,16 @@ public class QuizDaoDB implements QuizDao {
         quiz.setQuizId(quizId);
         
         // Add words
-        for (Word word : quiz.getWords()){
+        List<Word> words = quiz.getWords();
+        for (int i=0; i<words.size(); i++){
+            Word word = words.get(i);
             wordDao.addWord(word);
             
             // Add quiz and words to quizword
             final String INSERT_QUIZWORDS = "INSERT INTO quizword "
-                + " (quizId, wordId) "
-                + "VALUES (?, ?)";
-            jdbc.update(INSERT_QUIZWORDS, quizId, word.getWordId());
+                + " (quizId, wordId, questionNumber) "
+                + "VALUES (?, ?, ?)";
+            jdbc.update(INSERT_QUIZWORDS, quizId, word.getWordId(), i+1);
         }
         
         // Add attempts
@@ -69,7 +72,7 @@ public class QuizDaoDB implements QuizDao {
 
     @Override
     public List<Quiz> getAllQuizzes() {
-        final String SELECT_ALL_QUIZZES = "SELECT * FROM quiz";
+        final String SELECT_ALL_QUIZZES = "SELECT * FROM quiz ORDER BY quizId";
         List<Quiz> quizzes = jdbc.query(SELECT_ALL_QUIZZES, new QuizMapper());
         
         for (Quiz quiz : quizzes){
@@ -117,6 +120,19 @@ public class QuizDaoDB implements QuizDao {
         
         final String DELETE_QUIZ_FOR_QUIZ_ID = "DELETE FROM quiz WHERE quizId = ?";
         jdbc.update(DELETE_QUIZ_FOR_QUIZ_ID, quizId);
+    }
+
+    @Override
+    public Quiz getQuizByQuizId(int quizId) {
+        try{
+            final String GET_QUIZ_BY_QUIZ_ID = "SELECT * FROM quiz WHERE quizId = ?";
+            Quiz quiz = jdbc.queryForObject(GET_QUIZ_BY_QUIZ_ID, new QuizMapper(), quizId);
+            setAttemptsAndWordsForQuiz(quiz);
+            return quiz;
+            
+        } catch (DataAccessException ex){
+            return null;
+        }
     }
     
     public static final class QuizMapper implements RowMapper<Quiz> {

@@ -30,7 +30,7 @@ public class WordVariantDaoDB implements WordVariantDao {
     JdbcTemplate jdbc;
 
     @Override
-    public WordVariant getWordVariant(int wordVariantId) {
+    public WordVariant getWordVariantByWordVariantId(int wordVariantId) {
         try{
             final String SELECT_WORD_VARIANT_BY_WORD_VARIANT_ID = "SELECT * FROM wordvariant "
                 + "WHERE wordVariantId = ?";
@@ -44,8 +44,8 @@ public class WordVariantDaoDB implements WordVariantDao {
 
     @Override
     public List<WordVariant> getWordVariantsForWordId(String wordId) {
-        final String SELECT_WORD_VARIANTS_FOR_WORD_ID = "SELECT *FROM wordvariant "
-                + "WHERE wordId = ?";
+        final String SELECT_WORD_VARIANTS_FOR_WORD_ID = "SELECT * FROM wordvariant "
+                + "WHERE wordId = ? ORDER BY wordVariantId";
         return jdbc.query(SELECT_WORD_VARIANTS_FOR_WORD_ID, new WordVariantMapper(), wordId);
     }
 
@@ -71,7 +71,7 @@ public class WordVariantDaoDB implements WordVariantDao {
 
     @Override
     public List<WordVariant> getAllWordVariants() {
-        final String SELECT_ALL_WORD_VARIANTS = "SELECT * FROM wordvariant";
+        final String SELECT_ALL_WORD_VARIANTS = "SELECT * FROM wordvariant ORDER BY wordVariantId";
         List<WordVariant> wordVariants = jdbc.query(SELECT_ALL_WORD_VARIANTS, new WordVariantMapper());
         return wordVariants;
     }
