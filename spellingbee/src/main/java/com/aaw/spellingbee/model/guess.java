@@ -18,7 +18,7 @@ public class Guess {
     private int guessId;
     private String guess;
     private int attemptId;
-    private int wordId;
+    private String wordId;
     private boolean isCorrect;
 
     public int getGuessId() {
@@ -45,11 +45,11 @@ public class Guess {
         this.attemptId = attemptId;
     }
 
-    public int getWordId() {
+    public String getWordId() {
         return wordId;
     }
 
-    public void setWordId(int wordId) {
+    public void setWordId(String wordId) {
         this.wordId = wordId;
     }
 
@@ -64,11 +64,11 @@ public class Guess {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + this.guessId;
-        hash = 67 * hash + Objects.hashCode(this.guess);
-        hash = 67 * hash + this.attemptId;
-        hash = 67 * hash + this.wordId;
-        hash = 67 * hash + (this.isCorrect ? 1 : 0);
+        hash = 97 * hash + this.guessId;
+        hash = 97 * hash + Objects.hashCode(this.guess);
+        hash = 97 * hash + this.attemptId;
+        hash = 97 * hash + Objects.hashCode(this.wordId);
+        hash = 97 * hash + (this.isCorrect ? 1 : 0);
         return hash;
     }
 
@@ -90,16 +90,18 @@ public class Guess {
         if (this.attemptId != other.attemptId) {
             return false;
         }
-        if (this.wordId != other.wordId) {
-            return false;
-        }
         if (this.isCorrect != other.isCorrect) {
             return false;
         }
         if (!Objects.equals(this.guess, other.guess)) {
             return false;
         }
+        if (!Objects.equals(this.wordId, other.wordId)) {
+            return false;
+        }
         return true;
     }
+
+    
     
 }

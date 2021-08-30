@@ -8,14 +8,23 @@ CREATE TABLE quiz (
 );
 
 CREATE TABLE word (
-	wordId INT NOT NULL AUTO_INCREMENT,
-    word VARCHAR(50) NOT NULL,
+	wordId VARCHAR(52) NOT NULL,
+    headword VARCHAR(50) NOT NULL,
     CONSTRAINT pk_word PRIMARY KEY (wordId)
+);
+
+CREATE TABLE wordvariant (
+	wordVariantId INT NOT NULL AUTO_INCREMENT,
+    wordId VARCHAR(52) NOT NULL,
+    wordVariant VARCHAR(50) NOT NULL,
+    CONSTRAINT pk_wordvariant PRIMARY KEY (wordVariantId),
+    CONSTRAINT fk_wordvariant_word FOREIGN KEY (wordId)
+		REFERENCES word (wordId)
 );
 
 CREATE TABLE quizword (
 	quizId INT NOT NULL,
-    wordId INT NOT NULL,
+    wordId VARCHAR(52) NOT NULL,
     CONSTRAINT pk_quizword PRIMARY KEY (quizId, wordId),
     CONSTRAINT fk_quizword_quiz FOREIGN KEY (quizId)
 		REFERENCES quiz (quizId),
@@ -35,7 +44,7 @@ CREATE TABLE attempt (
 CREATE TABLE guess (
 	guessId INT NOT NULL AUTO_INCREMENT,
     guess VARCHAR(45) NOT NULL,
-    wordId INT NOT NULL,
+    wordId VARCHAR(52) NOT NULL,
     attemptId INT NOT NULL,
     isCorrect BOOLEAN NOT NULL,
     CONSTRAINT pk_guess PRIMARY KEY (guessId),

@@ -7,6 +7,7 @@
 
 package com.aaw.spellingbee.model;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -15,30 +16,39 @@ import java.util.Objects;
  */
 public class Word {
 
-    private int wordId;
-    private String word;
+    private String wordId;
+    private String headword;
+    private List<WordVariant> wordVariants;
 
-    public int getWordId() {
+    public String getWordId() {
         return wordId;
     }
 
-    public void setWordId(int wordId) {
+    public void setWordId(String wordId) {
         this.wordId = wordId;
     }
 
-    public String getWord() {
-        return word;
+    public String getHeadword() {
+        return headword;
     }
 
-    public void setWord(String word) {
-        this.word = word;
+    public void setHeadword(String headword) {
+        this.headword = headword;
+    }
+
+    public List<WordVariant> getWordVariants() {
+        return wordVariants;
+    }
+
+    public void setWordVariants(List<WordVariant> wordVariants) {
+        this.wordVariants = wordVariants;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 89 * hash + this.wordId;
-        hash = 89 * hash + Objects.hashCode(this.word);
+        int hash = 5;
+        hash = 67 * hash + Objects.hashCode(this.wordId);
+        hash = 67 * hash + Objects.hashCode(this.headword);
         return hash;
     }
 
@@ -54,14 +64,13 @@ public class Word {
             return false;
         }
         final Word other = (Word) obj;
-        if (this.wordId != other.wordId) {
+        if (!Objects.equals(this.wordId, other.wordId)) {
             return false;
         }
-        if (!Objects.equals(this.word, other.word)) {
+        if (!Objects.equals(this.headword, other.headword)) {
             return false;
         }
         return true;
     }
-    
     
 }
