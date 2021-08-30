@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,9 +57,14 @@ public class GuessDaoDBTest {
     private WordVariant word2Variant1;
     private WordVariant word2Variant2;
     private Quiz quiz1;
+    private Quiz quiz2;
     private Attempt attempt1;
+    private Attempt attempt2;
     private Guess guess1;
     private Guess guess2;
+    private Guess guess3;
+    private Guess guess4;
+    private Guess guess5;
     
     public GuessDaoDBTest() {
     }
@@ -123,8 +129,6 @@ public class GuessDaoDBTest {
         word1Variant1.setWordId(word1.getWordId());
         word1Variant1.setWordVariant("acknowledgement");
         
-        word1.setWordVariants(new ArrayList<>(Arrays.asList(word1Variant1)));
-        
         // kabbalah: kabbala or kabala
         word2Variant1 = new WordVariant();
         word2Variant1.setWordId(word2.getWordId());
@@ -134,38 +138,74 @@ public class GuessDaoDBTest {
         word2Variant2.setWordId(word2.getWordId());
         word2Variant2.setWordVariant("kabala");
         
+        // Link variants to words
+        word1.setWordVariants(new ArrayList<>(Arrays.asList(word1Variant1)));
         word2.setWordVariants(new ArrayList<>(Arrays.asList(word2Variant1, word2Variant2)));
+        word3.setWordVariants(new ArrayList<>());
         
-        // Create quiz
+        // Add all words
+        wordDao.addWord(word1);
+        wordDao.addWord(word2);
+        wordDao.addWord(word3);
+        
+        // Create quizzes without linking to other tables
         quiz1 = new Quiz();
         quiz1.setQuizId(1);
-        quiz1.setWords(new ArrayList<>(Arrays.asList(word1, word2)));
+        quiz2 = new Quiz();
+        quiz2.setQuizId(2);
+        final String INSERT_QUIZ = "INSERT INTO quiz (quizId) VALUES(?)";
+        jdbc.update(INSERT_QUIZ, quiz1.getQuizId());
+        jdbc.update(INSERT_QUIZ, quiz2.getQuizId());
         
-        // Create attempt
+        // Create attempts and add quiz IDs
         attempt1 = new Attempt();
         attempt1.setAttemptId(1);
         attempt1.setAttemptDate(LocalDate.now());
-        attempt1.setQuizId(1);
         attempt1.setPercentScore(40f);
+        attempt1.setQuizId(quiz1.getQuizId());
         
-        // Create guesses
+        attempt2 = new Attempt();
+        attempt2.setAttemptId(2);
+        attempt2.setAttemptDate(LocalDate.now());
+        attempt2.setPercentScore(100f);
+        attempt2.setQuizId(2);
+        
+        // Insert attempts without guesses
+        final String INSERT_ATTEMPT = "INSERT INTO attempt (attemptId,"
+                + "attemptDate, quizId) VALUES (?, ?, ?)";
+        jdbc.update(INSERT_ATTEMPT, attempt1.getAttemptId(), attempt1.getAttemptDate(),
+                attempt1.getQuizId());
+        jdbc.update(INSERT_ATTEMPT, attempt2.getAttemptId(), attempt2.getAttemptDate(),
+                attempt2.getQuizId());
+        
+        // Create guesses for attempts
         guess1 = new Guess();
-        guess1.setAttemptId(1);
         guess1.setGuess("acknowledgment");
-        guess1.setGuessId(1);
         guess1.setIsCorrect(true);
         guess1.setWordId(word1.getWordId());
+        guess1.setAttemptId(attempt1.getAttemptId());
         
         guess2 = new Guess();
-        guess2.setAttemptId(1);
         guess2.setGuess("cobbola");
-        guess2.setGuessId(2);
         guess2.setIsCorrect(false);
         guess2.setWordId(word2.getWordId());
+        guess2.setAttemptId(attempt1.getAttemptId());
         
-        // Link guesses to attempts and attempts to quizzes
-        attempt1.setGuesses(new ArrayList<>(Arrays.asList(guess1, guess2)));
-        quiz1.setAttempts(new ArrayList<>(Arrays.asList(attempt1)));
+        guess3 = new Guess();
+        guess4 = new Guess();
+        guess5 = new Guess();
+        guess3.setIsCorrect(true);
+        guess4.setIsCorrect(true);
+        guess5.setIsCorrect(true);
+        guess3.setWordId(word1.getWordId());
+        guess4.setWordId(word2.getWordId());
+        guess5.setWordId(word3.getWordId());
+        guess3.setGuess(word1.getHeadword());
+        guess4.setGuess(word2.getHeadword());
+        guess5.setGuess(word3.getHeadword());
+        guess3.setAttemptId(attempt2.getAttemptId());
+        guess4.setAttemptId(attempt2.getAttemptId());
+        guess5.setAttemptId(attempt2.getAttemptId());
         
     }
     
@@ -178,6 +218,21 @@ public class GuessDaoDBTest {
      */
     @Test
     public void testGetGuessesForAttemptId() {
+        
+        guess1 = guessDao.addGuess(guess1);
+        guess2 = guessDao.addGuess(guess2);
+        guess3 = guessDao.addGuess(guess3);
+        guess4 = guessDao.addGuess(guess4);
+        guess5 = guessDao.addGuess(guess5);
+        
+        List<Guess> guessesForAttempt1 = guessDao.getGuessesForAttemptId(attempt1.getAttemptId());
+        assertEquals(2, guessesForAttempt1.size());
+        assertTrue(guessesForAttempt1.contains(guess1));
+        assertTrue(guessesForAttempt1.contains(guess2));
+        assertFalse(guessesForAttempt1.contains(guess3));
+        assertFalse(guessesForAttempt1.contains(guess4));
+        assertFalse(guessesForAttempt1.contains(guess5));
+        
     }
 
     /**
@@ -185,6 +240,15 @@ public class GuessDaoDBTest {
      */
     @Test
     public void testGetAllGuesses() {
+        
+        guess1 = guessDao.addGuess(guess1);
+        guess2 = guessDao.addGuess(guess2);
+        
+        List<Guess> guessesFromDao = guessDao.getAllGuesses();
+        assertEquals(2, guessesFromDao.size());
+        assertTrue(guessesFromDao.contains(guess1));
+        assertTrue(guessesFromDao.contains(guess2));
+        
     }
 
     /**
@@ -192,20 +256,30 @@ public class GuessDaoDBTest {
      */
     @Test
     public void testDeleteGuess() {
+        
+        guess1 = guessDao.addGuess(guess1);
+        guess2 = guessDao.addGuess(guess2);
+        
+        Guess guessFromDao = guessDao.getGuessByGuessId(guess1.getGuessId());
+        assertNotNull(guessFromDao);
+        assertEquals(guess1, guessFromDao);
+        
+        guessDao.deleteGuess(guess1.getGuessId());
+        guessFromDao = guessDao.getGuessByGuessId(guess1.getGuessId());
+        assertNull(guessFromDao);
+        
     }
 
     /**
-     * Test of addGuess method, of class GuessDaoDB.
+     * Test of addGuess and getGuessByGuessId method, of class GuessDaoDB.
      */
     @Test
-    public void testAddGuess() {
+    public void testAddAndGetGuess() {
+        
+        guess1 = guessDao.addGuess(guess1);
+        Guess guessFromDao = guessDao.getGuessByGuessId(guess1.getGuessId());
+        assertNotNull(guessFromDao);
+        assertEquals(guess1, guessFromDao);
+        
     }
-
-    /**
-     * Test of getGuessByGuessId method, of class GuessDaoDB.
-     */
-    @Test
-    public void testGetGuessByGuessId() {
-    }
-    
 }
