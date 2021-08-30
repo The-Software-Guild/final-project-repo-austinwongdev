@@ -7,10 +7,18 @@
 
 package com.aaw.spellingbee.dao;
 
+import com.aaw.spellingbee.model.Attempt;
+import java.util.List;
+
 /**
  *
  * @author Austin Wong
  */
 public interface AttemptDao {
 
+    Attempt addAttempt(Attempt attempt);
+    List<Attempt> getAttemptsForQuizId(int quizId);
+    List<Attempt> getAllAttempts();
+    void deleteAttempt(int attemptId);
+    
 }

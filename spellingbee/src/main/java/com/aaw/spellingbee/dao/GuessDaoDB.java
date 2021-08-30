@@ -8,22 +8,77 @@
 package com.aaw.spellingbee.dao;
 
 import com.aaw.spellingbee.model.Guess;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author Austin Wong
  */
+
+@Repository
 public class GuessDaoDB implements GuessDao {
+    
+    @Autowired
+    JdbcTemplate jdbc;
 
     @Override
+    public List<Guess> getGuessesForAttemptId(int attemptId) {
+        final String SELECT_GUESSES_FOR_ATTEMPT = "SELECT * FROM guess "
+                + "WHERE attemptId = ?";
+        List<Guess> guesses = jdbc.query(SELECT_GUESSES_FOR_ATTEMPT, new GuessMapper(), attemptId);
+        return guesses;
+    }
+    
+    @Override
     public List<Guess> getAllGuesses() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String SELECT_ALL_GUESSES = "SELECT * FROM guess";
+        List<Guess> guesses = jdbc.query(SELECT_ALL_GUESSES, new GuessMapper());
+        return guesses;
     }
 
     @Override
     public void deleteGuess(int guessId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String DELETE_GUESS = "DELETE FROM guess WHERE guessId = ?";
+        jdbc.update(DELETE_GUESS, guessId);
+    }
+
+    @Override
+    @Transactional
+    public Guess addGuess(Guess guess) {
+        final String INSERT_GUESS = "INSERT INTO guess "
+                + "(guess, attemptId, wordId, isCorrect) "
+                + "VALUES (?, ?, ?, ?)";
+        jdbc.update(INSERT_GUESS,
+                guess.getGuess(),
+                guess.getAttemptId(),
+                guess.getWordId(),
+                guess.isIsCorrect());
+        int guessId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        guess.setGuessId(guessId);
+        return guess;
+    }
+    
+    public static final class GuessMapper implements RowMapper<Guess> {
+
+        @Override
+        public Guess mapRow(ResultSet rs, int index) throws SQLException {
+            Guess guess = new Guess();
+            
+            guess.setAttemptId(rs.getInt("attemptId"));
+            guess.setGuess(rs.getString("guess"));
+            guess.setGuessId(rs.getInt("guessId"));
+            guess.setIsCorrect(rs.getBoolean("isCorrect"));
+            guess.setWordId(rs.getString("wordId"));
+            
+            return guess;
+        }
     }
 
 }

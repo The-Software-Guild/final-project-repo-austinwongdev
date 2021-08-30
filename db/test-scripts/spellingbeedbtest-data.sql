@@ -2,6 +2,7 @@ USE spellingbeedbtest;
 
 INSERT INTO quiz (quizId) VALUES (1), (2), (3);
 INSERT INTO word (wordId, headword) VALUES ('orange:1', 'orange'), ('boring', 'boring'), ('lunge:1', 'lunge'), ('fantastic:1', 'fantastic'), ('quiescent', 'quiescent'), ('paleontology', 'paleontology'), ('acknowledgment', 'acknowledgment');
+INSERT INTO wordvariant (wordVariantId, wordVariant, wordId) VALUES (1, 'acknowledgement', 'acknowledgment');
 INSERT INTO quizword (quizId, wordId) VALUES (1, 'orange:1'), (1, 'boring'), (1, 'lunge:1'), (1, 'fantastic:1'), (1, 'quiescent'), 
 											 (2, 'paleontology'), (2, 'acknowledgment'), (2, 'orange:1'), (2, 'boring'), (2, 'lunge:1');
 INSERT INTO attempt (attemptId, attemptDate, quizId) VALUES (1, '2015-01-01', 1), 

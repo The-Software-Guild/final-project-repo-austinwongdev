@@ -8,7 +8,6 @@ package com.aaw.spellingbee.dao;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Word;
 import com.aaw.spellingbee.model.WordVariant;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.jupiter.api.Assertions.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class WordVariantDaoDBTest {
+    
+    @Autowired
+    JdbcTemplate jdbc;
     
     @Autowired
     WordVariantDao wordVariantDao;
@@ -62,19 +65,19 @@ public class WordVariantDaoDBTest {
             guessDao.deleteGuess(guess.getGuessId());
         }
         
+        // Clear out wordvariant table in DB
+        List<WordVariant> wordVariants = wordVariantDao.getAllWordVariants();
+        for (WordVariant wordVariant : wordVariants){
+            wordVariantDao.deleteWordVariant(wordVariant.getWordVariantId());
+        }
+
         // Clear out word table in DB
         List<Word> words = wordDao.getAllWords();
         for (Word word : words){
             wordDao.deleteWord(word.getWordId());
         }
         
-        // Clear out wordvariant table in DB
-        List<WordVariant> wordVariants = wordVariantDao.getAllWordVariants();
-        for (WordVariant wordVariant : wordVariants){
-            wordVariantDao.deleteWordVariant(wordVariant.getWordVariantId());
-        }
-        
-        // Create words that have variants
+        // Create words that have variants, but don't add those variants yet
         word1 = new Word();
         word1.setHeadword("acknowledgment");
         word1.setWordId("acknowledgment");
@@ -82,6 +85,17 @@ public class WordVariantDaoDBTest {
         word2 = new Word();
         word2.setHeadword("kabbalah");
         word2.setWordId("kabbalah");
+        
+        // Add words to DB
+        final String INSERT_WORD = "INSERT INTO word "
+                + "(wordId, headword) "
+                + "VALUES (?, ?)";
+        jdbc.update(INSERT_WORD,
+                word1.getWordId(),
+                word1.getHeadword());
+        jdbc.update(INSERT_WORD,
+                word2.getWordId(),
+                word2.getHeadword());
         
         // Create wordvariants
         // acknowledgment : acknowledgement
