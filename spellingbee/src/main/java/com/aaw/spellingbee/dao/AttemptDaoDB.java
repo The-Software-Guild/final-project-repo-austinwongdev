@@ -103,7 +103,7 @@ public class AttemptDaoDB implements AttemptDao {
     @Override
     public Attempt getAttemptByAttemptId(int attemptId) {
         try{
-            final String GET_ATTEMPT_BY_ATTEMPT_ID = "SELECT * FROM attempt WHERE attmemptId = ?";
+            final String GET_ATTEMPT_BY_ATTEMPT_ID = "SELECT * FROM attempt WHERE attemptId = ?";
             Attempt attempt = jdbc.queryForObject(GET_ATTEMPT_BY_ATTEMPT_ID, new AttemptMapper(), attemptId);
             setGuessesForAttempt(attempt);
             return attempt;

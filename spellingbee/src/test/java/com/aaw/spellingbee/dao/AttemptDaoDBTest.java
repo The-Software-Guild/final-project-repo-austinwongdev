@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,9 @@ public class AttemptDaoDBTest {
     private WordVariant word2Variant1;
     private WordVariant word2Variant2;
     private Quiz quiz1;
+    private Quiz quiz2;
     private Attempt attempt1;
+    private Attempt attempt2;
     private Guess guess1;
     private Guess guess2;
     
@@ -123,8 +126,6 @@ public class AttemptDaoDBTest {
         word1Variant1.setWordId(word1.getWordId());
         word1Variant1.setWordVariant("acknowledgement");
         
-        word1.setWordVariants(new ArrayList<>(Arrays.asList(word1Variant1)));
-        
         // kabbalah: kabbala or kabala
         word2Variant1 = new WordVariant();
         word2Variant1.setWordId(word2.getWordId());
@@ -134,38 +135,65 @@ public class AttemptDaoDBTest {
         word2Variant2.setWordId(word2.getWordId());
         word2Variant2.setWordVariant("kabala");
         
+        // Link variants to words
+        word1.setWordVariants(new ArrayList<>(Arrays.asList(word1Variant1)));
         word2.setWordVariants(new ArrayList<>(Arrays.asList(word2Variant1, word2Variant2)));
+        word3.setWordVariants(new ArrayList<>());
         
-        // Create quiz
+        // Add all words
+        wordDao.addWord(word1);
+        wordDao.addWord(word2);
+        wordDao.addWord(word3);
+        
+        // Create quizzes without linking to other tables
+        final String INSERT_QUIZ = "INSERT INTO quiz (quizId) VALUES(?)";
+        jdbc.update(INSERT_QUIZ, 1);
+        jdbc.update(INSERT_QUIZ, 2);
         quiz1 = new Quiz();
         quiz1.setQuizId(1);
-        quiz1.setWords(new ArrayList<>(Arrays.asList(word1, word2)));
+        quiz2 = new Quiz();
+        quiz2.setQuizId(2);
         
-        // Create attempt
+        // Create attempts and add quiz IDs
         attempt1 = new Attempt();
-        attempt1.setAttemptId(1);
         attempt1.setAttemptDate(LocalDate.now());
-        attempt1.setQuizId(1);
         attempt1.setPercentScore(40f);
+        attempt1.setQuizId(quiz1.getQuizId());
         
-        // Create guesses
+        attempt2 = new Attempt();
+        attempt2.setAttemptDate(LocalDate.now());
+        attempt2.setPercentScore(100f);
+        attempt2.setQuizId(2);
+        
+        // Create guesses for attempts
         guess1 = new Guess();
-        guess1.setAttemptId(1);
         guess1.setGuess("acknowledgment");
         guess1.setGuessId(1);
         guess1.setIsCorrect(true);
         guess1.setWordId(word1.getWordId());
         
         guess2 = new Guess();
-        guess2.setAttemptId(1);
         guess2.setGuess("cobbola");
         guess2.setGuessId(2);
         guess2.setIsCorrect(false);
         guess2.setWordId(word2.getWordId());
         
-        // Link guesses to attempts and attempts to quizzes
+        Guess guess3 = new Guess();
+        Guess guess4 = new Guess();
+        Guess guess5 = new Guess();
+        guess3.setIsCorrect(true);
+        guess4.setIsCorrect(true);
+        guess5.setIsCorrect(true);
+        guess3.setWordId(word1.getWordId());
+        guess4.setWordId(word2.getWordId());
+        guess5.setWordId(word3.getWordId());
+        guess3.setGuess(word1.getHeadword());
+        guess4.setGuess(word2.getHeadword());
+        guess5.setGuess(word3.getHeadword());
+        
+        // Set guesses for attempts
         attempt1.setGuesses(new ArrayList<>(Arrays.asList(guess1, guess2)));
-        quiz1.setAttempts(new ArrayList<>(Arrays.asList(attempt1)));
+        attempt2.setGuesses(new ArrayList<>(Arrays.asList(guess3, guess4, guess5)));
         
     }
     
@@ -174,10 +202,15 @@ public class AttemptDaoDBTest {
     }
 
     /**
-     * Test of addAttempt method, of class AttemptDaoDB.
+     * Test of addAttempt and getAttemptByAttemptId methods, of class AttemptDaoDB.
      */
     @Test
-    public void testAddAttempt() {
+    public void testAddAndGetAttempt() {
+        
+        attempt1 = attemptDao.addAttempt(attempt1);
+        Attempt attemptFromDao = attemptDao.getAttemptByAttemptId(attempt1.getAttemptId());
+        assertNotNull(attemptFromDao);
+        assertEquals(attempt1, attemptFromDao);
     }
 
     /**
@@ -185,6 +218,14 @@ public class AttemptDaoDBTest {
      */
     @Test
     public void testGetAllAttempts() {
+        
+        attempt1 = attemptDao.addAttempt(attempt1);
+        attempt2 = attemptDao.addAttempt(attempt2);
+        List<Attempt> attempts = attemptDao.getAllAttempts();
+        assertEquals(2, attempts.size());
+        assertTrue(attempts.contains(attempt1));
+        assertTrue(attempts.contains(attempt2));
+        
     }
 
     /**
@@ -192,6 +233,12 @@ public class AttemptDaoDBTest {
      */
     @Test
     public void testGetAttemptsForQuizId() {
+        
+        attempt1 = attemptDao.addAttempt(attempt1);
+        Attempt attemptFromDao = attemptDao.getAttemptByAttemptId(attempt1.getAttemptId());
+        assertNotNull(attemptFromDao);
+        assertEquals(attempt1, attemptFromDao);
+    
     }
 
     /**
@@ -199,13 +246,16 @@ public class AttemptDaoDBTest {
      */
     @Test
     public void testDeleteAttempt() {
+        
+        attempt1 = attemptDao.addAttempt(attempt1);
+        attempt2 = attemptDao.addAttempt(attempt2);
+        Attempt attemptFromDao = attemptDao.getAttemptByAttemptId(attempt1.getAttemptId());
+        assertNotNull(attemptFromDao);
+        assertEquals(attempt1, attemptFromDao);
+        
+        attemptDao.deleteAttempt(attempt1.getAttemptId());
+        attemptFromDao = attemptDao.getAttemptByAttemptId(attempt1.getAttemptId());
+        assertNull(attemptFromDao);
     }
 
-    /**
-     * Test of getAttemptByAttemptId method, of class AttemptDaoDB.
-     */
-    @Test
-    public void testGetAttemptByAttemptId() {
-    }
-    
 }
