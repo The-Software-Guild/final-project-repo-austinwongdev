@@ -8,11 +8,13 @@
 package com.aaw.spellingbee.controller;
 
 import com.aaw.spellingbee.model.Guess;
+import com.aaw.spellingbee.service.SpellingBeeService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,13 @@ import org.springframework.web.client.RestTemplate;
 
 @Controller
 public class NewQuizController {
+    
+    private final SpellingBeeService service;
+
+    @Autowired
+    public NewQuizController(SpellingBeeService service) {
+        this.service = service;
+    }
     
     @GetMapping("newQuiz")
     public String createNewQuiz(){

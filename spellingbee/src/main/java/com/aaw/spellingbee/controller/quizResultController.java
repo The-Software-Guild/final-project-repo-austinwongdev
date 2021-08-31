@@ -8,7 +8,9 @@
 package com.aaw.spellingbee.controller;
 
 import com.aaw.spellingbee.model.Attempt;
+import com.aaw.spellingbee.service.SpellingBeeService;
 import java.time.LocalDate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class QuizResultController {
 
+    private final SpellingBeeService service;
+
+    @Autowired
+    public QuizResultController(SpellingBeeService service) {
+        this.service = service;
+    }
+    
     @GetMapping("quizResult")
     public String displayQuizResult(int id, Model model){
         
