@@ -50,12 +50,12 @@
         </div>
         <div class="row m-4">
             <div class="col text-left m-2">
-                <span th:text="'Correct: ' + ${numCorrect}"># Correct</span>
+                <span th:text="'Correct: ' + ${attempt.numCorrect}"># Correct</span>
             </div>
         </div>
         <div class="row m-4">
             <div class="col text-left m-2">
-                <span th:text="'Incorrect: ' + ${numIncorrect}"># Incorrect</span>
+                <span th:text="'Incorrect: ' + ${attempt.numIncorrect}"># Incorrect</span>
             </div>
         </div>
         
@@ -72,10 +72,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="attempt : ${attempts}">
-<!--                            <td th:text="${attempt.quizId}">#</td>-->
-                            <td th:text="${attempt.attemptDate}">Word</td>
-                            <td th:text="${attempt.percentScore}">Guess</td>
+                        <tr th:each="guess : ${guesses}">
+                            <td th:text="${guess.correctSpelling}">Word</td>
+                            <td th:text="${guess.guess}">Guess</td>
                         </tr>
                     </tbody>
                 </table>

@@ -31,25 +31,21 @@ public class QuizResultController {
     }
     
     @GetMapping("quizResult")
-    public String displayQuizResult(int id, Model model){
+    public String displayQuizResult(int attemptId, Model model){
         
-        // *** Fake code to get webpage temporarily running
-        Attempt attempt = new Attempt();
-        attempt.setAttemptDate(LocalDate.now());
-        attempt.setAttemptId(id);
-        attempt.setQuizId(id);
-        attempt.setPercentScore(40);
+        Attempt attempt = service.getAttempt(attemptId);
         model.addAttribute("attempt", attempt);
-        model.addAttribute("numCorrect", 2);
-        model.addAttribute("numIncorrect", 3);
-        // *** End fake code
+        model.addAttribute("guesses", attempt.getGuesses());
         
         return "quizResult";
     }
     
     @GetMapping("deleteQuizResult")
-    public String deleteQuizResult(int id){
-        return "history";
+    public String deleteQuizResult(int attemptId){
+        
+        service.deleteAttempt(attemptId);
+        
+        return "redirect:/history";
     }
     
 }

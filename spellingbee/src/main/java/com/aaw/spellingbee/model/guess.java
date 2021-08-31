@@ -20,6 +20,7 @@ public class Guess {
     private int attemptId;
     private String wordId;
     private boolean isCorrect;
+    private String correctSpelling;
 
     public int getGuessId() {
         return guessId;
@@ -59,6 +60,14 @@ public class Guess {
 
     public void setIsCorrect(boolean isCorrect) {
         this.isCorrect = isCorrect;
+    }
+    
+    public String getCorrectSpelling() {
+        return correctSpelling;
+    }
+
+    public void setCorrectSpelling(String correctSpelling) {
+        this.correctSpelling = correctSpelling;
     }
 
     @Override

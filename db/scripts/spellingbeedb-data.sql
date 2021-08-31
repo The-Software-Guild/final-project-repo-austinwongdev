@@ -1,4 +1,4 @@
-USE spellingbeedbtest;
+USE spellingbeedb;
 
 INSERT INTO quiz (quizId) VALUES (1), (2), (3);
 INSERT INTO word (wordId, headword) VALUES ('orange:1', 'orange'), ('boring', 'boring'), ('lunge:1', 'lunge'), ('fantastic:1', 'fantastic'), ('quiescent', 'quiescent'), ('paleontology', 'paleontology'), ('acknowledgment', 'acknowledgment');

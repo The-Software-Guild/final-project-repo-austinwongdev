@@ -51,10 +51,10 @@
                     <tbody>
                         <tr th:each="attempt : ${attempts}">
                             <td th:text="${attempt.quizId}">Quiz ID</td>
-                            <td th:text="${attempt.attemptDate}">Attempt Date</td>
-                            <td th:text="${attempt.percentScore}">Score</td>
-                            <td><a href="#" th:href="@{/quizResult(id=${attempt.quizId})}">Details</a></td>
-                            <td><a href="#" th:href="@{/deleteQuizResult(id=${attempt.quizId})}">Delete</a></td>
+                            <td th:text="${#temporals.format(attempt.attemptDate, 'M/d/yyyy')}">Attempt Date</td>
+                            <td th:text="${#numbers.formatDecimal(attempt.percentScore,0,0)+' %'}">Score</td>
+                            <td><a href="#" th:href="@{/quizResult(attemptId=${attempt.attemptId})}">Details</a></td>
+                            <td><a href="#" th:href="@{/deleteQuizResult(attemptId=${attempt.attemptId})}">Delete</a></td>
                         </tr>
                     </tbody>
                 </table>

@@ -60,6 +60,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         List<Attempt> attempts = attemptDao.getAllAttempts();
         for (Attempt attempt : attempts){
             calculateAndSetPercentScore(attempt);
+            getCorrectSpellingForGuesses(attempt);
         }
         return attempts;
     }
@@ -68,6 +69,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     public Attempt getAttempt(int attemptId) {
         Attempt attempt = attemptDao.getAttemptByAttemptId(attemptId);
         calculateAndSetPercentScore(attempt);
+        getCorrectSpellingForGuesses(attempt);
         return attempt;
     }
 
@@ -76,6 +78,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         List<Attempt> attempts = attemptDao.getAttemptsForQuizId(quizId);
         for (Attempt attempt : attempts){
             calculateAndSetPercentScore(attempt);
+            getCorrectSpellingForGuesses(attempt);
         }
         return attempts;
     }
@@ -111,8 +114,23 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             }
         }
         
-        float percentScore = ((float) numCorrect / (numCorrect + numIncorrect));
+        float percentScore = 100*((float) numCorrect / (numCorrect + numIncorrect));
         attempt.setPercentScore(percentScore);
+        attempt.setNumCorrect(numCorrect);
+        attempt.setNumIncorrect(numIncorrect);
+    }
+    
+    /**
+     * Helper function that gets the correct spelling for each word guessed and
+     * sets that in the corresponding Guess objects for the given attempt
+     * @param attempt - Attempt object (represents a quiz result)
+     */
+    private void getCorrectSpellingForGuesses(Attempt attempt){
+        for (Guess guess : attempt.getGuesses()){
+            Word word = wordDao.getWordByWordId(guess.getWordId());
+            String correctSpelling = word.getHeadword();
+            guess.setCorrectSpelling(correctSpelling);
+        }
     }
     
 }

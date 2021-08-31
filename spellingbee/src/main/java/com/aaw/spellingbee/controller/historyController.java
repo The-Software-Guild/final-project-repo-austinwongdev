@@ -7,9 +7,12 @@
 
 package com.aaw.spellingbee.controller;
 
+import com.aaw.spellingbee.model.Attempt;
 import com.aaw.spellingbee.service.SpellingBeeService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
@@ -28,7 +31,9 @@ public class HistoryController {
     }
 
     @GetMapping("history")
-    public String displayHistory(){
+    public String displayHistory(Model model){
+        List<Attempt> attempts = service.getAllAttempts();
+        model.addAttribute("attempts", attempts);
         return "history";
     }
     

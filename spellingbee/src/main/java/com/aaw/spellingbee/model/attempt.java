@@ -22,6 +22,24 @@ public class Attempt {
     private int quizId;
     private List<Guess> guesses;
     private float percentScore;
+    private int numCorrect;
+    private int numIncorrect;
+
+    public int getNumCorrect() {
+        return numCorrect;
+    }
+
+    public void setNumCorrect(int numCorrect) {
+        this.numCorrect = numCorrect;
+    }
+
+    public int getNumIncorrect() {
+        return numIncorrect;
+    }
+
+    public void setNumIncorrect(int numIncorrect) {
+        this.numIncorrect = numIncorrect;
+    }
 
     public float getPercentScore() {
         return percentScore;
