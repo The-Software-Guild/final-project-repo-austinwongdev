@@ -43,7 +43,7 @@
         <!-- Quiz -->
         <div class="row m-4">
             <div class="col text-left">
-                <h3 th:text="'Word #' + ${quizId}">Word #</h3>
+                <h3 th:text="'Word #' + ${wordNumber}">Word #</h3>
             </div>
         </div> 
         <div class="row m-4">
@@ -57,7 +57,7 @@
                             Definition</label>
                         <div class="col-9">
                             <span id="wordDefinition" name="wordDefinition"
-                                  th:text="${wordDefinition}"/>
+                                  th:text="${entry.headword}"/>
                         </div>
                     </div>
                     
@@ -67,7 +67,7 @@
                             Example</label>
                         <div class="col-9">
                             <span id="wordExample" name="wordExample"
-                                  th:text="${wordExample}"/>
+                                  th:text="${entry.exampleUsage}"/>
                         </div>
                     </div>
                     
@@ -78,10 +78,8 @@
                             Pronunciation</label>
                         <div class="col-9">
                             <audio controls autoplay>
-                                <source th:src="${wordPronunciationURL}"
+                                <source th:src="${entry.pronunciationURLs.get(0)}"
                                         type="audio/mpeg">
-<!--                                    <source src="https://media.merriam-webster.com/audio/prons/en/us/mp3/w/wonder03.mp3"
-                                            type="audio/mpeg">-->
                             </audio>
                         </div>
                     </div>
