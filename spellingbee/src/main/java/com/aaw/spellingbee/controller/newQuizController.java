@@ -11,8 +11,6 @@ import com.aaw.spellingbee.model.DictionaryEntry;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Quiz;
 import com.aaw.spellingbee.service.SpellingBeeService;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,6 +30,7 @@ public class NewQuizController {
     //private List<DictionaryEntry> entries;
     private int entryIndex;
     private DictionaryEntry entry;
+    private List<DictionaryEntry> entries;
     private Quiz newQuiz;
 
     @Autowired
@@ -40,24 +39,20 @@ public class NewQuizController {
     }
     
     @GetMapping("newQuiz")
-    public String createNewQuiz(Model model){
-        List<DictionaryEntry> entries = service.generateQuiz();
-        entry = entries.get(0);
+    public String createNewQuiz(){
+        entries = service.generateQuiz();
         entryIndex = 0;
         newQuiz = new Quiz();
-        model.addAttribute("entries", entries);
-        model.addAttribute("entryIndex", entryIndex);
-        model.addAttribute("entry", entry); // entry is coming back null, so the problem may be from generating quiz?
         return "redirect:/takeQuiz";
     }
     
     @GetMapping("takeQuiz")
     public String takeQuiz(Model model){
         
-        model.addAttribute("entry", entry); // this works so you have to add it here, but you're still having problems with getting a pronunciation, example, and definition
-        // Biggest problem appears to be finding ones with example usages
+        entry = entries.get(entryIndex);
+        model.addAttribute("entry", entry);
         model.addAttribute("wordNumber", entryIndex+1);
-        //model.addAttribute("entry", entries.get(entryIndex));
+        model.addAttribute("pronunciationURL", entry.getPronunciationURLs().get(0));
         
         return "takeQuiz";
     }
@@ -71,8 +66,10 @@ public class NewQuizController {
         entryIndex += 1;
         
         if (entryIndex < service.getNumQuizWords()){
+            entry = entries.get(entryIndex);
+            model.addAttribute("entry", entries.get(entryIndex));
             model.addAttribute("wordNumber", entryIndex+1);
-            //model.addAttribute("entry", entries.get(entryIndex));
+            model.addAttribute("pronunciationURL", entry.getPronunciationURLs().get(0));
         
             return "takeQuiz";
         }

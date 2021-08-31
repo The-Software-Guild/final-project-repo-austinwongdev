@@ -33,4 +33,6 @@ public interface SpellingBeeService {
     
     List<DictionaryEntry> generateQuiz();
     
+    DictionaryEntry getDictionaryEntry(String wordStr);
+    
 }

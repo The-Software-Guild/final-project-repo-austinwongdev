@@ -18,9 +18,12 @@ import com.aaw.spellingbee.model.Quiz;
 import com.aaw.spellingbee.model.Word;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -196,34 +199,6 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     }
     
     /**
-     * Checks a DictionaryEntry object to see if the given word matches the entry's
-     * headword or its variants, if the entry has a definition and example usage,
-     * if the entry has a pronunciation audio file, and if the entry is not offensive.
-     * @param entry - DictionaryEntry object
-     * @param wordStr - String of word to check
-     * @return - true if the entry is valid, false otherwise
-     */
-    private boolean isDictionaryEntryValid(DictionaryEntry entry, String wordStr){
-        if (entry.getDefinition() == null || entry.getDefinition().isEmpty()){
-            return false;
-        }
-        if (entry.getExampleUsage() == null || entry.getExampleUsage().isEmpty()){
-            return false;
-        }
-        if (entry.getPronunciationURLs().isEmpty()){
-            return false;
-        }
-        if (!entry.getHeadword().equals(wordStr) && !entry.getVariants().contains(wordStr)){
-            return false;
-        }
-        if (entry.isOffensive()){
-            return false;
-        }
-        
-        return true;
-    }
-    
-    /**
      * Gets random words from a 3rd party random word API
      * @param numWords - Integer representing number of words to get from API
      * @return - A List of words as Strings
@@ -239,10 +214,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         return words;
     }
     
-    private DictionaryEntry getDictionaryEntry(String wordStr){
-        
-        DictionaryEntry entry = new DictionaryEntry();
-        
+    public String getJsonStr(String wordStr){
         // Construct URL for HTML GET call to Dictionary API
         final String GET_DICTIONARY_DATA_FOR_WORD = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
                 + wordStr
@@ -256,10 +228,19 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             return null;
         }
         String jsonStr = response.getBody();
-        JSONArray json = new JSONArray(jsonStr);
+        return jsonStr;
+    }
+    
+    @Override
+    public DictionaryEntry getDictionaryEntry(String wordStr){
+        
+        DictionaryEntry entry = new DictionaryEntry();
+        
+        String jsonStr = getJsonStr(wordStr);
         
         try{
             // Parse JSON response
+            JSONArray json = new JSONArray(jsonStr);
             for (int i=0; i<json.length(); i++){
 
                 JSONObject jsonEntry = json.getJSONObject(i);
@@ -271,9 +252,19 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                 entry.setHeadword(headwordInfo.getString("hw").replace("*", ""));
                 entry.setOffensive(metadata.getBoolean("offensive"));
                 
-                if (!entry.getHeadword().equals(wordStr) && metadata.has("stems")){
-                    List<Object> stems = metadata.getJSONArray("stems").toList();
-                    if (!stems.contains(wordStr)){
+                // Check if we have the right word
+                if (!entry.getHeadword().equals(wordStr)){
+                    if (metadata.has("stems")){
+                        JSONArray stemsJsonArr = metadata.getJSONArray("stems");
+                        Set<String> stems = new HashSet<>();
+                        for (int j=0; j<stemsJsonArr.length(); j++){
+                            stems.add(stemsJsonArr.getString(j));
+                        }
+                        if (!stems.contains(wordStr)){
+                            return null;
+                        }
+                    }
+                    else{
                         return null;
                     }
                 }
@@ -310,7 +301,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             return null;
         }
         
-        return entry;
+        return null;
     }
     
     /**
@@ -333,10 +324,17 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             for (int l=0; l < definingText.length(); l++){
                 JSONArray definingTextEntry = definingText.getJSONArray(l);
                 if (definingTextEntry.getString(0).equals("text")){
-                    entry.setDefinition(definingTextEntry.getString(1));
+                    String definition = definingTextEntry.getString(1);
+                    definition = formatPhrase(definition);
+                    entry.setDefinition(definition);
                 }
                 else if (definingTextEntry.getString(0).equals("vis")){
-                    entry.setExampleUsage(definingTextEntry.getString(1));
+                    JSONArray visArr = definingTextEntry.getJSONArray(1);
+                    JSONObject visObj = visArr.getJSONObject(0);
+                    String example = visObj.getString("t");
+                    example = hideWord(example);
+                    example = formatPhrase(example);
+                    entry.setExampleUsage(example);
                 }
             }
             // Found both a sense with both definition and example usage, so break early
@@ -350,6 +348,90 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             }
         }
         return false;
+    }
+    
+    /**
+     * Searches for a word surrounded by {wi} and {\/wi} tags, and replaces
+     * it with ***
+     * @param phrase - String to consider
+     * @return - String with word and tags replaced with ___
+     */
+    private String hideWord(String phrase){
+        String hiddenWordPhrase = phrase;
+        
+        // Hide word if it's used here
+        if (phrase.contains("{wi}") && phrase.contains("{/wi}")){
+            int start_i = phrase.indexOf("{wi}");
+            int end_i = phrase.indexOf("{/wi}") + 5;
+            String targetStr = phrase.substring(start_i, end_i);
+            hiddenWordPhrase = phrase.replace(targetStr, "___");
+        }
+        
+        // Clean up other tags
+        
+        // Do the same for {qword} {\/qword}
+        
+        return hiddenWordPhrase;
+    }
+    
+    /**
+     * Searches for tags in phrase String and removes them
+     * @param phrase - String of unformatted phrase
+     * @return - Formatted phrase String with tags removed
+     */
+    private String formatPhrase(String phrase){
+        // String to return
+        String formattedPhrase = phrase;
+        
+        // Tags to replace with other characters
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("{bc}", ":");
+        replacements.put("{ldquo}", "\"");
+        replacements.put("{rdquo}", "\"");
+        
+        for (String tag : replacements.keySet()){
+            while (formattedPhrase.contains(tag)){
+                formattedPhrase = formattedPhrase.replace(tag, replacements.get(tag));
+            }
+        }
+        
+        // Tags to delete while preserving text between opening and closing tags
+        List<String> doubleTags = new ArrayList<>(Arrays.asList(
+                "b", "inf", "it", "sc", "sup"));
+        for (String tag : doubleTags){
+            String toDelete = "{" + tag + "}";
+            if (formattedPhrase.contains(toDelete)){
+                formattedPhrase = formattedPhrase.replace(toDelete, "");
+            }
+            toDelete = "{/" + tag + "}";
+            if (formattedPhrase.contains(toDelete)){
+                formattedPhrase = formattedPhrase.replace(toDelete, "");
+            }
+        }
+        
+        // Tags to delete while deleting text between opening and closing tags
+        
+        // Tags to extract info from
+        List<String> singleTags = new ArrayList<>(Arrays.asList(
+                "d_link", "sx", "a_link", "i_link", "et_link",
+                "mat", "dxt"));
+        for (String tag : singleTags){
+            while (formattedPhrase.contains("{"+tag)){
+                int tag_start_i = formattedPhrase.indexOf("{"+tag);
+                int tag_end_i = formattedPhrase.indexOf("}", tag_start_i)+1;
+                String tagStr = formattedPhrase.substring(tag_start_i+1, tag_end_i-1);
+                String[] tagFields = tagStr.split(Pattern.quote("|"));
+                String wordToSave = "";
+                if (tagFields.length>=2){
+                    wordToSave = tagFields[1];
+                }
+                
+                String toDelete = formattedPhrase.substring(tag_start_i, tag_end_i);
+                formattedPhrase = formattedPhrase.replace(toDelete, wordToSave);
+            }
+        }
+        
+        return formattedPhrase;
     }
     
     /**
@@ -375,7 +457,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             else if (baseFilename.startsWith("gg")){
                 subdirectory = "gg";
             }
-            else if (baseFilename.substring(0, 1).matches("^[0-9[:punct:]]{1}$")){
+            else if (baseFilename.substring(0, 1).matches("^[0-9\\p{Punct}]{1}$")){
                 subdirectory = "number";
             }
             else{
@@ -387,7 +469,8 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                     + fileType
                     + "/"
                     + subdirectory
-                    + "/wonder03"
+                    + "/"
+                    + baseFilename
                     + "."
                     + fileType;
             pronunciationURLs.add(pronunciationURL);

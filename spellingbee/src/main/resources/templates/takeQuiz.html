@@ -57,7 +57,7 @@
                             Definition</label>
                         <div class="col-9">
                             <span id="wordDefinition" name="wordDefinition"
-                                  th:text="${entry.headword}"/>
+                                  th:text="${entry.definition}"/>
                         </div>
                     </div>
                     
@@ -78,7 +78,7 @@
                             Pronunciation</label>
                         <div class="col-9">
                             <audio controls autoplay>
-                                <source th:src="${entry.pronunciationURLs.get(0)}"
+                                <source th:src="${pronunciationURL}"
                                         type="audio/mpeg">
                             </audio>
                         </div>
