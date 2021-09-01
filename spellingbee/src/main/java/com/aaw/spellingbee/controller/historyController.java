@@ -32,7 +32,7 @@ public class HistoryController {
 
     @GetMapping("history")
     public String displayHistory(Model model){
-        List<Attempt> attempts = service.getAllAttempts();
+        List<Attempt> attempts = service.getAllPartialOrCompleteAttempts();
         model.addAttribute("attempts", attempts);
         return "history";
     }

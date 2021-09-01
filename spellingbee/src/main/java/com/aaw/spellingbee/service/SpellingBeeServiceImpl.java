@@ -70,7 +70,8 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
 
     @Override
     public List<Quiz> getAllQuizzes() {
-        return quizDao.getAllQuizzes();
+        List<Quiz> allQuizzes = quizDao.getAllQuizzes();
+        return allQuizzes;
     }
 
     @Override
@@ -79,13 +80,20 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     }
 
     @Override
-    public List<Attempt> getAllAttempts() {
-        List<Attempt> attempts = attemptDao.getAllAttempts();
-        for (Attempt attempt : attempts){
-            calculateAndSetPercentScore(attempt);
-            getCorrectSpellingForGuesses(attempt);
+    public List<Attempt> getAllPartialOrCompleteAttempts() {
+        List<Attempt> allAttempts = attemptDao.getAllAttempts();
+        List<Attempt> partialOrCompleteAttempts = new ArrayList<>();
+        for (Attempt attempt : allAttempts){
+            if (attempt.getGuesses().isEmpty()){
+                attemptDao.deleteAttempt(attempt.getAttemptId());
+            }
+            else{
+                calculateAndSetPercentScore(attempt);
+                getCorrectSpellingForGuesses(attempt);
+                partialOrCompleteAttempts.add(attempt);
+            }
         }
-        return attempts;
+        return partialOrCompleteAttempts;
     }
 
     @Override
@@ -341,7 +349,6 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                     JSONArray visArr = definingTextEntry.getJSONArray(1);
                     JSONObject visObj = visArr.getJSONObject(0);
                     String example = visObj.getString("t");
-                    example = hideWord(example);
                     example = formatPhrase(example);
                     word.setExampleUsage(example);
                 }
@@ -365,15 +372,14 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
      * @param phrase - String to consider
      * @return - String with word and tags replaced with ___
      */
-    private String hideWord(String phrase){
-        String hiddenWordPhrase = phrase;
+    @Override
+    public String hideWord(String phrase, String word){
         
-        // Hide word if it's used here
-        if (phrase.contains("{wi}") && phrase.contains("{/wi}")){
-            int start_i = phrase.indexOf("{wi}");
-            int end_i = phrase.indexOf("{/wi}") + 5;
-            String targetStr = phrase.substring(start_i, end_i);
-            hiddenWordPhrase = phrase.replace(targetStr, "___");
+        String hiddenWordPhrase = phrase;
+        String replacement = "________";
+        
+        if (phrase.contains(word)){
+            hiddenWordPhrase = hiddenWordPhrase.replace(word, replacement);
         }
         
         // Clean up other tags
@@ -392,9 +398,14 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         // String to return
         String formattedPhrase = phrase;
         
+        // Remove first colon
+        if (formattedPhrase.startsWith("{bc}")){
+            formattedPhrase = formattedPhrase.replaceFirst(Pattern.quote("{bc}"), "");
+        }
+        
         // Tags to replace with other characters
         Map<String, String> replacements = new HashMap<>();
-        replacements.put("{bc}", ":");
+        replacements.put("{bc}", ": ");
         replacements.put("{ldquo}", "\"");
         replacements.put("{rdquo}", "\"");
         
@@ -406,7 +417,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         
         // Tags to delete while preserving text between opening and closing tags
         List<String> doubleTags = new ArrayList<>(Arrays.asList(
-                "b", "inf", "it", "sc", "sup"));
+                "b", "inf", "it", "sc", "sup", "wi", "dx"));
         for (String tag : doubleTags){
             String toDelete = "{" + tag + "}";
             if (formattedPhrase.contains(toDelete)){

@@ -28,7 +28,7 @@ public interface SpellingBeeService {
     Attempt createAttempt(int quizId);
     Attempt getAttempt(int attemptId);
     void deleteAttempt(int attemptId);
-    List<Attempt> getAllAttempts();
+    List<Attempt> getAllPartialOrCompleteAttempts();
     List<Attempt> getAttemptsForQuiz(int quizId);
     
     List<Guess> getGuessesForAttempt(int attemptId);
@@ -36,6 +36,7 @@ public interface SpellingBeeService {
     Guess addGuess(Guess guess);
     
     List<Word> getWordsForQuiz(int quizId);
+    String hideWord(String phrase, String word);
     
     Quiz generateQuiz();
     

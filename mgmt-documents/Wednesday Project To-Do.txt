@@ -4,17 +4,7 @@
 		
 2. Create service layer unit tests
 
-3. Add toggle for definition and example usage
-
-4. Add play buttons for definition, example usage, and pronunciation
-	Re-order elements : 1. Pronunciation, 2. Definition, 3. Example Usage
-	
-5. Add text-to-speech for each element
-
 6. Update ERD to reflect new table changes
-
-7. Test what happens if you don't complete quiz
-		Pay attention to quiz history
 		
 8. Add variants column to quizResult page
 
@@ -27,6 +17,8 @@
 12. Tidy up about section to look better. Add note about case-sensitivity mattering.
 		Test case-sensitivity.
 		
+13. .gitignore API key
+		
 (Last Step). Change # of words in service layer back to 5
 
 ...
@@ -35,3 +27,4 @@
 
 2. Allow multiple pronunciations to be played
 
+3. Reflect quiz# and attempt# in quizResult and history page

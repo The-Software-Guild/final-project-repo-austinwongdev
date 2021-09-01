@@ -50,8 +50,10 @@ public class NewQuizController {
             // Handle error
         }
         String pronunciationURL = word.getFirstPronunciationURL();
+        String wordExampleHidingWord = service.hideWord(word.getExampleUsage(), word.getHeadword());
         
         model.addAttribute("word", word);
+        model.addAttribute("wordExampleHidingWord", wordExampleHidingWord);
         model.addAttribute("wordNumber", quiz.getNextWordNumber());
         model.addAttribute("pronunciationURL", pronunciationURL);
         model.addAttribute("quizId", quizId);
