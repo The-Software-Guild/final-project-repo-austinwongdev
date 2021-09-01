@@ -10,6 +10,10 @@ CREATE TABLE quiz (
 CREATE TABLE word (
 	wordId VARCHAR(52) NOT NULL,
     headword VARCHAR(50) NOT NULL,
+    pronunciationURL VARCHAR(100) NOT NULL,
+    offensive BOOLEAN,
+    definition VARCHAR(1000) NOT NULL, 
+    exampleUsage VARCHAR(1000) NOT NULL,
     CONSTRAINT pk_word PRIMARY KEY (wordId)
 );
 

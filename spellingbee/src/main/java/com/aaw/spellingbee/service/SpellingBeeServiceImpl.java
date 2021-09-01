@@ -12,10 +12,11 @@ import com.aaw.spellingbee.dao.GuessDao;
 import com.aaw.spellingbee.dao.QuizDao;
 import com.aaw.spellingbee.dao.WordDao;
 import com.aaw.spellingbee.model.Attempt;
-import com.aaw.spellingbee.model.DictionaryEntry;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Quiz;
 import com.aaw.spellingbee.model.Word;
+import com.aaw.spellingbee.model.WordVariant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     private final WordDao wordDao;
     
     private final String apiKey = "49b65708-71c6-4de2-a46e-af5b83260027";
-    private final int numQuizWords = 5;
+    private final int numQuizWords = 2;
 
     @Autowired
     public SpellingBeeServiceImpl(AttemptDao attemptDao, GuessDao guessDao, QuizDao quizDao, WordDao wordDao) {
@@ -115,6 +116,11 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         attemptDao.deleteAttempt(attemptId);
     }
 
+    /**
+     * Gets all words for a quiz in the database
+     * @param quizId - Integer quiz ID
+     * @return - List of Word objects for given quiz
+     */
     @Override
     public List<Word> getWordsForQuiz(int quizId) {
         return wordDao.getWordsForQuizId(quizId);
@@ -158,36 +164,30 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     /**
      * Uses Merriam-Webster's dictionary api and a random word api to generate
      * a spelling quiz.
-     * @return - List (of size numWords) of DictionaryEntry objects
+     * @return - A new quiz with words
      */
-    public List<DictionaryEntry> generateQuiz(){
-        List<DictionaryEntry> entries = new ArrayList<>();
-        Set<String> quizWords = new HashSet<>();
+    @Override
+    public Quiz generateQuiz(){
         
-        List<String> initialWords = generateRandomWordsForQuiz(numQuizWords);
-        for (String wordStr : initialWords){
-            // Prevent duplicates
-            if (!quizWords.contains(wordStr)){
-                DictionaryEntry entry = getDictionaryEntry(wordStr);
-                // Prevent words without enough data
-                if (entry != null){ // && isDictionaryEntryValid(entry, entry.getHeadword())){
-                    entries.add(entry);
-                    quizWords.add(wordStr);
-                }
-            }
-        }
+        List<Word> words = new ArrayList<>();
+        Set<String> wordsSet = new HashSet<>();        
         
-        // Look up more words if not all words in our initial list were valid
-        while (entries.size() < numQuizWords){
-            List<String> extraWords = generateRandomWordsForQuiz(numQuizWords);
-            for (String wordStr : extraWords){
-                if (!quizWords.contains(wordStr)){
-                    DictionaryEntry entry = getDictionaryEntry(wordStr);
-                    if (entry != null){ // && isDictionaryEntryValid(entry, entry.getHeadword())){
-                        entries.add(entry);
-                        quizWords.add(wordStr);
+        while (words.size() < numQuizWords){
+            // Grab words from API
+            List<String> wordStrsToConsider = generateRandomWordsForQuiz(numQuizWords);
+            
+            for (String wordStr : wordStrsToConsider){    
+                // Prevent duplicates
+                if (!wordsSet.contains(wordStr)){        
+                    // Call Merriam-Webster API and create Word object from string
+                    Word word = createWordFromJSON(wordStr);        
+                    // Prevent words without enough data
+                    if (word != null){
+                        words.add(word);
+                        wordsSet.add(wordStr);
+                        
                         // Break early if we get enough total words
-                        if (entries.size() >= numQuizWords){
+                        if (words.size() >= numQuizWords){
                             break;
                         }
                     }
@@ -195,11 +195,14 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
             }
         }
         
-        return entries;
+        Quiz quiz = new Quiz();
+        quiz.setWords(words);
+        quiz = addQuiz(quiz);
+        return quiz;
     }
     
     /**
-     * Gets random words from a 3rd party random word API
+     * Gets random words from a 3rd party random word API using a GET request
      * @param numWords - Integer representing number of words to get from API
      * @return - A List of words as Strings
      */
@@ -214,7 +217,12 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         return words;
     }
     
-    public String getJsonStr(String wordStr){
+    /**
+     * Gets JSON response for a given word (String) from Merriam-Webster's dictionary API
+     * @param wordStr - Word to look up (as String)
+     * @return - String of JSON response, or null if not an HTTP Status of 200
+     */
+    private String getJsonStr(String wordStr){
         // Construct URL for HTML GET call to Dictionary API
         final String GET_DICTIONARY_DATA_FOR_WORD = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
                 + wordStr
@@ -231,11 +239,15 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         return jsonStr;
     }
     
+    /**
+     * Attempts to create a Word object from JSON response
+     * @param wordStr - String of word
+     * @return - Word object for given word, or null if not enough data
+     */
     @Override
-    public DictionaryEntry getDictionaryEntry(String wordStr){
+    public Word createWordFromJSON(String wordStr){
         
-        DictionaryEntry entry = new DictionaryEntry();
-        
+        Word word = new Word();
         String jsonStr = getJsonStr(wordStr);
         
         try{
@@ -248,12 +260,12 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                 JSONObject headwordInfo = jsonEntry.getJSONObject("hwi");
 
                 // Search for metadata
-                entry.setId(metadata.getString("id"));
-                entry.setHeadword(headwordInfo.getString("hw").replace("*", ""));
-                entry.setOffensive(metadata.getBoolean("offensive"));
+                word.setWordId(metadata.getString("id"));
+                word.setHeadword(headwordInfo.getString("hw").replace("*", ""));
+                word.setOffensive(metadata.getBoolean("offensive"));
                 
                 // Check if we have the right word
-                if (!entry.getHeadword().equals(wordStr)){
+                if (!word.getHeadword().equals(wordStr)){
                     if (metadata.has("stems")){
                         JSONArray stemsJsonArr = metadata.getJSONArray("stems");
                         Set<String> stems = new HashSet<>();
@@ -274,26 +286,23 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                     continue;
                 }
                 JSONArray pronunciations = headwordInfo.getJSONArray("prs");
-                addPronunciationsToEntry(entry, pronunciations);
-                if (entry.getPronunciationURLs().isEmpty()){
+                addPronunciationsToEntry(word, pronunciations);
+                if (word.getPronunciationURLs().isEmpty()){
                     continue;
                 }
 
                 // Search for variants
                 if (jsonEntry.has("vrs")){
                     JSONArray variantsArr = jsonEntry.getJSONArray("vrs");
-                    addVariantsToEntry(entry, variantsArr);
-                }
-                else{
-                    entry.setVariants(new ArrayList<>());
+                    addVariantsToEntry(word, variantsArr);
                 }
 
                 // Search for definition and example usage
                 JSONArray senseSequences = jsonEntry.getJSONArray("def").getJSONObject(0).getJSONArray("sseq");
                 for (int j=0; j< senseSequences.length(); j++){
                     JSONArray senseSequence = senseSequences.getJSONArray(j);
-                    if (senseSequenceHasDefinitionAndExampleUsage(entry, senseSequence)){
-                        return entry;
+                    if (senseSequenceHasDefinitionAndExampleUsage(word, senseSequence)){
+                        return word;
                     }
                 }
             }
@@ -308,13 +317,13 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
      * Helper function to parse senseSequence ("sseq") and determine if a sense
      * exists in the senseSequence that contains both a definition ("text" in "dt")
      * and an example usage (AKA verbal illustration - "vis" in "dt"). Also sets
-     * definition and example usage in the DictionaryEntry object only if both are found.
-     * @param entry - DictionaryEntry object used to hold definition and example usage
+     * definition and example usage in the Word object only if both are found.
+     * @param word - Word object used to hold definition and example usage
      * @param senseSequence - JSONArray object for senseSequence
      * @return - true if senseSequence contains at least one sense with both a 
      * definition and verbal illustration, false otherwise
      */
-    private boolean senseSequenceHasDefinitionAndExampleUsage(DictionaryEntry entry, JSONArray senseSequence){
+    private boolean senseSequenceHasDefinitionAndExampleUsage(Word word, JSONArray senseSequence){
         for (int k=0; k <senseSequence.length(); k++){
             JSONObject sense = senseSequence.getJSONArray(k).getJSONObject(1);
             JSONArray definingText = sense.getJSONArray("dt");
@@ -326,7 +335,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                 if (definingTextEntry.getString(0).equals("text")){
                     String definition = definingTextEntry.getString(1);
                     definition = formatPhrase(definition);
-                    entry.setDefinition(definition);
+                    word.setDefinition(definition);
                 }
                 else if (definingTextEntry.getString(0).equals("vis")){
                     JSONArray visArr = definingTextEntry.getJSONArray(1);
@@ -334,17 +343,17 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                     String example = visObj.getString("t");
                     example = hideWord(example);
                     example = formatPhrase(example);
-                    entry.setExampleUsage(example);
+                    word.setExampleUsage(example);
                 }
             }
             // Found both a sense with both definition and example usage, so break early
-            if (entry.getDefinition() != null && entry.getExampleUsage() != null){
+            if (word.getDefinition() != null && word.getExampleUsage() != null){
                 return true;
             }
             // Otherwise, reset fields and keep searching
             else{
-                entry.setDefinition(null);
-                entry.setExampleUsage(null);
+                word.setDefinition(null);
+                word.setExampleUsage(null);
             }
         }
         return false;
@@ -437,14 +446,14 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     /**
      * Helper function that parses JSONArray of pronunciations ("prs"), producing a List
      * of Strings representing URLs to a word's pronunciations, then adds that list
-     * to the provided DictionaryEntry
-     * @param entry - DictionaryEntry object
+     * to the provided Word
+     * @param word - Word object
      * @param pronunciations - JSONArray of pronunciation data
      * @return - true if contains URLs were added, false otherwise
      */
-    private boolean addPronunciationsToEntry(DictionaryEntry entry, JSONArray pronunciations){
+    private boolean addPronunciationsToEntry(Word word, JSONArray pronunciations){
         List<String> pronunciationURLs = new ArrayList<>();
-        entry.setPronunciationURLs(pronunciationURLs);
+        word.setPronunciationURLs(pronunciationURLs);
         for (int j=0; j<pronunciations.length(); j++){
             if (!pronunciations.getJSONObject(j).has("sound")){
                 return false;
@@ -475,25 +484,52 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
                     + fileType;
             pronunciationURLs.add(pronunciationURL);
         }
-        entry.setPronunciationURLs(pronunciationURLs);
+        word.setPronunciationURLs(pronunciationURLs);
         return true;
     }
     
     /**
      * Helper function that parses the variants ("vrs") array, adding any found
-     * variants to the given DictionaryEntry as a List of Strings
-     * @param entry - DictionaryEntry object
+     * variants to the given Word as a List of Strings
+     * @param word - Word object
      * @param variantsArr - JSONArray for the "vrs" field from Merriam-Webster's
      * Collegiate Dictionary with Audio API
      */
-    private void addVariantsToEntry(DictionaryEntry entry, JSONArray variantsArr){
-        List<String> variants = new ArrayList<>();
+    private void addVariantsToEntry(Word word, JSONArray variantsArr){
+        List<WordVariant> wordVariants = new ArrayList<>();
         for (int j=0; j<variantsArr.length(); j++){
             JSONObject variantEntry = variantsArr.getJSONObject(j);
             String variant = variantEntry.getString("va").replace("*", "");
-            variants.add(variant);
+            WordVariant wordVariant = new WordVariant();
+            wordVariant.setWordVariant(variant);
+            wordVariants.add(wordVariant);
         }
-        entry.setVariants(variants);
+        word.setWordVariants(wordVariants);
+    }
+
+    @Override
+    public Attempt createAttempt(int quizId) {
+        Attempt attempt = new Attempt();
+        attempt.setAttemptDate(LocalDate.now());
+        attempt.setQuizId(quizId);
+        attempt = attemptDao.addAttempt(attempt);
+        return attempt;
+    }
+    
+    @Override
+    public boolean isGuessCorrect(Guess guess){
+        Word word = wordDao.getWordByWordId(guess.getWordId());
+        Set<String> possibleAnswers = new HashSet<>();
+        possibleAnswers.add(word.getHeadword());
+        for (WordVariant variant : word.getWordVariants()){
+            possibleAnswers.add(variant.getWordVariant());
+        }
+        return possibleAnswers.contains(guess.getGuess());
+    }
+    
+    @Override
+    public Guess addGuess(Guess guess){
+        return guessDao.addGuess(guess);
     }
     
 }

@@ -111,14 +111,26 @@ public class AttemptDaoDBTest {
         word1 = new Word();
         word1.setHeadword("acknowledgment");
         word1.setWordId("acknowledgment");
+        word1.setDefinition("definition");
+        word1.setExampleUsage("example");
+        word1.setOffensive(true);
+        word1.addPronunciationURL("URL");
         
         word2 = new Word();
         word2.setHeadword("kabbalah");
         word2.setWordId("kabbalah");
+        word2.setDefinition("definition");
+        word2.setExampleUsage("example");
+        word2.setOffensive(true);
+        word2.addPronunciationURL("URL");
         
         word3 = new Word();
         word3.setHeadword("fantastic");
         word3.setWordId("fantastic:1");
+        word3.setDefinition("definition");
+        word3.setExampleUsage("example");
+        word3.setOffensive(true);
+        word3.addPronunciationURL("URL");
         
         // Create wordvariants and add to Word objects
         // acknowledgment : acknowledgement

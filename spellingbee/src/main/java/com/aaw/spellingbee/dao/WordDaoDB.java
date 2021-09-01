@@ -11,6 +11,8 @@ import com.aaw.spellingbee.model.Word;
 import com.aaw.spellingbee.model.WordVariant;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -72,16 +74,21 @@ public class WordDaoDB implements WordDao {
     @Transactional
     public Word addWord(Word word) {
         final String INSERT_WORD = "INSERT INTO word "
-                + "(wordId, headword) "
-                + "VALUES (?, ?)";
+                + "(wordId, headword, pronunciationURL, offensive, definition, exampleUsage) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         
         try{
             jdbc.update(INSERT_WORD,
                     word.getWordId(),
-                    word.getHeadword());
+                    word.getHeadword(),
+                    word.getFirstPronunciationURL(),
+                    word.isOffensive(),
+                    word.getDefinition(),
+                    word.getExampleUsage());
 
             // Add word variants
             for (WordVariant wordVariant : word.getWordVariants()){
+                wordVariant.setWordId(word.getWordId());
                 wordVariantDao.addWordVariant(wordVariant);
             }
         } catch(DuplicateKeyException ex){
@@ -143,6 +150,10 @@ public class WordDaoDB implements WordDao {
             
             word.setHeadword(rs.getString("headword"));
             word.setWordId(rs.getString("wordId"));
+            word.setDefinition(rs.getString("definition"));
+            word.setExampleUsage(rs.getString("exampleUsage"));
+            word.setOffensive(rs.getBoolean("offensive"));
+            word.setPronunciationURLs(new ArrayList<>(Arrays.asList(rs.getString("pronunciationURL"))));
             
             return word;
         }

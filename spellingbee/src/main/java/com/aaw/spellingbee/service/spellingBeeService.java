@@ -8,7 +8,6 @@
 package com.aaw.spellingbee.service;
 
 import com.aaw.spellingbee.model.Attempt;
-import com.aaw.spellingbee.model.DictionaryEntry;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Quiz;
 import com.aaw.spellingbee.model.Word;
@@ -21,18 +20,25 @@ import java.util.List;
 public interface SpellingBeeService {
     
     int getNumQuizWords();
+    
     Quiz getQuiz(int quizId);
     List<Quiz> getAllQuizzes();
     Quiz addQuiz(Quiz quiz);
-    List<Attempt> getAllAttempts();
+    
+    Attempt createAttempt(int quizId);
     Attempt getAttempt(int attemptId);
-    List<Attempt> getAttemptsForQuiz(int quizId);
-    List<Guess> getGuessesForAttempt(int attemptId);
     void deleteAttempt(int attemptId);
+    List<Attempt> getAllAttempts();
+    List<Attempt> getAttemptsForQuiz(int quizId);
+    
+    List<Guess> getGuessesForAttempt(int attemptId);
+    boolean isGuessCorrect(Guess guess);
+    Guess addGuess(Guess guess);
+    
     List<Word> getWordsForQuiz(int quizId);
     
-    List<DictionaryEntry> generateQuiz();
+    Quiz generateQuiz();
     
-    DictionaryEntry getDictionaryEntry(String wordStr);
+    Word createWordFromJSON(String wordStr);
     
 }

@@ -110,7 +110,5 @@ public class Guess {
         }
         return true;
     }
-
-    
     
 }

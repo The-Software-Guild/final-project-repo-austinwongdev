@@ -9,7 +9,6 @@ package com.aaw.spellingbee.controller;
 
 import com.aaw.spellingbee.model.Attempt;
 import com.aaw.spellingbee.service.SpellingBeeService;
-import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

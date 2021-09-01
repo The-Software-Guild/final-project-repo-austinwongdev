@@ -8,6 +8,7 @@
 package com.aaw.spellingbee.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +21,7 @@ public class Attempt {
     private int attemptId;
     private LocalDate attemptDate;
     private int quizId;
-    private List<Guess> guesses;
+    private List<Guess> guesses = new ArrayList<>();
     private float percentScore;
     private int numCorrect;
     private int numIncorrect;
@@ -80,6 +81,18 @@ public class Attempt {
     public void setGuesses(List<Guess> guesses) {
         this.guesses = guesses;
     }
+    
+    public void addGuess(Guess guess){
+        guesses.add(guess);
+    }
+    
+    public List<String> getGuessedWordsIds(){
+        List<String> guessedWordsIds = new ArrayList<>();
+        for (Guess guess : guesses){
+            guessedWordsIds.add(guess.getWordId());
+        }
+        return guessedWordsIds;
+    }
 
     @Override
     public int hashCode() {
@@ -117,7 +130,5 @@ public class Attempt {
         }
         return true;
     }
-
-    
     
 }

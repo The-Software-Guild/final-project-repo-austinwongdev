@@ -7,11 +7,12 @@
 
 package com.aaw.spellingbee.controller;
 
-import com.aaw.spellingbee.model.DictionaryEntry;
+import com.aaw.spellingbee.model.Attempt;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Quiz;
+import com.aaw.spellingbee.model.Word;
 import com.aaw.spellingbee.service.SpellingBeeService;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,59 +28,58 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class NewQuizController {
     
     private final SpellingBeeService service;
-    //private List<DictionaryEntry> entries;
-    private int entryIndex;
-    private DictionaryEntry entry;
-    private List<DictionaryEntry> entries;
-    private Quiz newQuiz;
 
     @Autowired
     public NewQuizController(SpellingBeeService service) {
         this.service = service;
     }
     
-    @GetMapping("newQuiz")
-    public String createNewQuiz(){
-        entries = service.generateQuiz();
-        entryIndex = 0;
-        newQuiz = new Quiz();
-        return "redirect:/takeQuiz";
-    }
-    
     @GetMapping("takeQuiz")
-    public String takeQuiz(Model model){
+    public String takeQuiz(int quizId, Model model){
         
-        entry = entries.get(entryIndex);
-        model.addAttribute("entry", entry);
-        model.addAttribute("wordNumber", entryIndex+1);
-        model.addAttribute("pronunciationURL", entry.getPronunciationURLs().get(0));
+        if (quizId == 0){
+            Quiz newQuiz = service.generateQuiz();
+            Attempt newAttempt = service.createAttempt(newQuiz.getQuizId());
+            return "redirect:/takeQuiz?quizId="
+                    +newQuiz.getQuizId();
+        }
+        
+        Quiz quiz = service.getQuiz(quizId);
+        Word word = quiz.getNextWord();
+        if (word == null){
+            // Handle error
+        }
+        String pronunciationURL = word.getFirstPronunciationURL();
+        
+        model.addAttribute("word", word);
+        model.addAttribute("wordNumber", quiz.getNextWordNumber());
+        model.addAttribute("pronunciationURL", pronunciationURL);
+        model.addAttribute("quizId", quizId);
+        model.addAttribute("attemptId", quiz.getMostRecentAttempt().getAttemptId());
         
         return "takeQuiz";
     }
     
     @PostMapping("submitGuess")
-    public String submitGuess(Guess guess, Model model){
+    public String submitGuess(Guess guess, HttpServletRequest request){
         
+        int attemptId = Integer.parseInt(request.getParameter("attemptId"));
+        int quizId = Integer.parseInt(request.getParameter("quizId"));
+                
         // Store guess
-        // ***AAW
+        guess.setGuess(request.getParameter("guessInput"));
+        guess.setWordId(request.getParameter("wordId"));
+        guess.setCorrectSpelling(request.getParameter("headword"));
+        guess.setAttemptId(attemptId);
+        guess.setIsCorrect(service.isGuessCorrect(guess));
+        service.addGuess(guess);
         
-        entryIndex += 1;
-        
-        if (entryIndex < service.getNumQuizWords()){
-            entry = entries.get(entryIndex);
-            model.addAttribute("entry", entries.get(entryIndex));
-            model.addAttribute("wordNumber", entryIndex+1);
-            model.addAttribute("pronunciationURL", entry.getPronunciationURLs().get(0));
-        
-            return "takeQuiz";
-        }
-        else{
-            // Add quiz to DB and get attemptId
-            // ***AAW to do
-            int attemptId = 1;
-            
+        Quiz quiz = service.getQuiz(quizId);
+        Word word = quiz.getNextWord();
+        if (word == null){
             return "redirect:/quizResult?attemptId="+attemptId;
         }
+            
+        return "redirect:/takeQuiz?quizId="+quizId;
     }
-    
 }

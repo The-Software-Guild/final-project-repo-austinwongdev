@@ -8,7 +8,9 @@ package com.aaw.spellingbee.dao;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Word;
 import com.aaw.spellingbee.model.WordVariant;
+import java.util.ArrayList;
 import java.util.List;
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,21 +83,37 @@ public class WordVariantDaoDBTest {
         word1 = new Word();
         word1.setHeadword("acknowledgment");
         word1.setWordId("acknowledgment");
+        word1.setDefinition("definition");
+        word1.setExampleUsage("example");
+        word1.setOffensive(true);
+        word1.addPronunciationURL("URL");
         
         word2 = new Word();
         word2.setHeadword("kabbalah");
         word2.setWordId("kabbalah");
+        word2.setDefinition("definition");
+        word2.setExampleUsage("example");
+        word2.setOffensive(true);
+        word2.addPronunciationURL("URL");
         
         // Add words to DB
         final String INSERT_WORD = "INSERT INTO word "
-                + "(wordId, headword) "
-                + "VALUES (?, ?)";
+                + "(wordId, headword, pronunciationURL, offensive, definition, exampleUsage) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         jdbc.update(INSERT_WORD,
                 word1.getWordId(),
-                word1.getHeadword());
+                word1.getHeadword(),
+                word1.getFirstPronunciationURL(),
+                word1.isOffensive(),
+                word1.getDefinition(),
+                word1.getExampleUsage());
         jdbc.update(INSERT_WORD,
                 word2.getWordId(),
-                word2.getHeadword());
+                word2.getHeadword(),
+                word2.getFirstPronunciationURL(),
+                word2.isOffensive(),
+                word2.getDefinition(),
+                word2.getExampleUsage());
         
         // Create wordvariants
         // acknowledgment : acknowledgement

@@ -1,0 +1,37 @@
+1. Remove questionNumber from quizword
+		Or incorporate it into data model in Java (in quiz?)
+		And incorporate it into getting next word in service layer and controller
+		
+2. Create service layer unit tests
+
+3. Add toggle for definition and example usage
+
+4. Add play buttons for definition, example usage, and pronunciation
+	Re-order elements : 1. Pronunciation, 2. Definition, 3. Example Usage
+	
+5. Add text-to-speech for each element
+
+6. Update ERD to reflect new table changes
+
+7. Test what happens if you don't complete quiz
+		Pay attention to quiz history
+		
+8. Add variants column to quizResult page
+
+9. Color-coordinate correct/incorrect words
+
+10. Add functionality for sorting history rows by different columns
+
+11. Add delete confirmation for deleting attempt in history
+
+12. Tidy up about section to look better. Add note about case-sensitivity mattering.
+		Test case-sensitivity.
+		
+(Last Step). Change # of words in service layer back to 5
+
+...
+
+1. Pre-load quizzes and load new quiz from DB first. Resort to API call only if necessary and in one lump sum.
+
+2. Allow multiple pronunciations to be played
+
