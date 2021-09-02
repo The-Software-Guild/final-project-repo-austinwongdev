@@ -1,8 +1,6 @@
 2. CREATE SERVICE LAYER UNIT TESTS
 
 6. Update ERD to reflect new table changes
-		
-13. .gitignore API key
 
 ...
 

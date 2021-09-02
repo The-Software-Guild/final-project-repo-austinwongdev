@@ -394,8 +394,8 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     }
     
     /**
-     * Searches for a word surrounded by {wi} and {\/wi} tags, and replaces
-     * it with ***
+     * Searches for a word in a phrase, and replaces
+     * it with ________
      * @param phrase - String to consider
      * @return - String with word and tags replaced with ___
      */
@@ -405,8 +405,11 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         String hiddenWordPhrase = phrase;
         String replacement = "________";
         
-        if (phrase.contains(word)){
-            hiddenWordPhrase = hiddenWordPhrase.replace(word, replacement);
+        while (hiddenWordPhrase.toLowerCase().contains(word.toLowerCase())){
+            int start_i = hiddenWordPhrase.toLowerCase().indexOf(word.toLowerCase());
+            int end_i = start_i + word.length();
+            String wordToRemove = hiddenWordPhrase.substring(start_i, end_i);
+            hiddenWordPhrase = hiddenWordPhrase.replace(wordToRemove, replacement);
         }
         
         // Clean up other tags

@@ -34,6 +34,11 @@ public class NewQuizController {
         this.service = service;
     }
     
+    @GetMapping("newQuiz")
+    public String newQuiz(){
+        return "redirect:/takeQuiz?quizId=0";
+    }
+    
     @GetMapping("takeQuiz")
     public String takeQuiz(int quizId, Model model){
         
@@ -51,9 +56,11 @@ public class NewQuizController {
         }
         String pronunciationURL = word.getFirstPronunciationURL();
         String wordExampleHidingWord = service.hideWord(word.getExampleUsage(), word.getHeadword());
+        String wordDefinitionHidingWord = service.hideWord(word.getDefinition(), word.getHeadword());
         
         model.addAttribute("word", word);
         model.addAttribute("wordExampleHidingWord", wordExampleHidingWord);
+        model.addAttribute("wordDefinitionHidingWord", wordDefinitionHidingWord);
         model.addAttribute("wordNumber", quiz.getNextWordNumber());
         model.addAttribute("pronunciationURL", pronunciationURL);
         model.addAttribute("quizId", quizId);

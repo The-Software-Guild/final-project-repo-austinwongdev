@@ -15,7 +15,7 @@ function playPronunciationAudio(){
 
 function toggleDefinition() {
     $('#toggleDefinitionButton').on('click', function(){
-        $('#wordDefinition').toggle('slow');
+        $('#wordDefinitionHidingWord').toggle('slow');
         if ($('#toggleDefinitionButton').text() === 'Show'){
             $('#toggleDefinitionButton').text('Hide');
         }
