@@ -21,6 +21,8 @@ public class Guess {
     private String wordId;
     private boolean isCorrect;
     private String correctSpelling;
+    
+    private String wordVariantsStr;
 
     public int getGuessId() {
         return guessId;
@@ -68,6 +70,14 @@ public class Guess {
 
     public void setCorrectSpelling(String correctSpelling) {
         this.correctSpelling = correctSpelling;
+    }
+    
+    public void setWordVariantsStr(String wordVariantsStr){
+        this.wordVariantsStr = wordVariantsStr;
+    }
+    
+    public String getWordVariantsStr(){
+        return wordVariantsStr;
     }
 
     @Override

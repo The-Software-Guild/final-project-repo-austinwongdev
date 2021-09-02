@@ -7,10 +7,12 @@
 
 package com.aaw.spellingbee.service;
 
+import com.aaw.spellingbee.dao.APIKeyDao;
 import com.aaw.spellingbee.dao.AttemptDao;
 import com.aaw.spellingbee.dao.GuessDao;
 import com.aaw.spellingbee.dao.QuizDao;
 import com.aaw.spellingbee.dao.WordDao;
+import com.aaw.spellingbee.dao.WordVariantDao;
 import com.aaw.spellingbee.model.Attempt;
 import com.aaw.spellingbee.model.Guess;
 import com.aaw.spellingbee.model.Quiz;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,16 +49,19 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     private final GuessDao guessDao;
     private final QuizDao quizDao;
     private final WordDao wordDao;
+    private final WordVariantDao wordVariantDao;
+    private final APIKeyDao apiKeyDao;
     
-    private final String apiKey = "49b65708-71c6-4de2-a46e-af5b83260027";
-    private final int numQuizWords = 2;
+    private final int numQuizWords = 5;
 
     @Autowired
-    public SpellingBeeServiceImpl(AttemptDao attemptDao, GuessDao guessDao, QuizDao quizDao, WordDao wordDao) {
+    public SpellingBeeServiceImpl(AttemptDao attemptDao, GuessDao guessDao, QuizDao quizDao, WordDao wordDao, WordVariantDao wordVariantDao, APIKeyDao apiKeyDao) {
         this.attemptDao = attemptDao;
         this.guessDao = guessDao;
         this.quizDao = quizDao;
         this.wordDao = wordDao;
+        this.wordVariantDao = wordVariantDao;
+        this.apiKeyDao = apiKeyDao;
     }
     
     @Override
@@ -101,6 +107,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         Attempt attempt = attemptDao.getAttemptByAttemptId(attemptId);
         calculateAndSetPercentScore(attempt);
         getCorrectSpellingForGuesses(attempt);
+        setWordVariantsInGuesses(attempt);
         return attempt;
     }
 
@@ -132,6 +139,26 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
     @Override
     public List<Word> getWordsForQuiz(int quizId) {
         return wordDao.getWordsForQuizId(quizId);
+    }
+    
+    /**
+     * Finds word variants for each guess and sets those variants as a comma-delimited
+     * string in guess
+     * @param attempt - Attempt object holding guesses
+     */
+    private void setWordVariantsInGuesses(Attempt attempt){
+        for (Guess guess : attempt.getGuesses()){
+            List<WordVariant> variants = wordVariantDao.getWordVariantsForWordId(guess.getWordId());
+            if (variants.isEmpty()){
+                guess.setWordVariantsStr("");
+            }
+            else{
+                String wordVariantsStr = variants.stream()
+                        .map(v -> v.getWordVariant())
+                        .collect(Collectors.joining(", "));
+                guess.setWordVariantsStr(wordVariantsStr);
+            }
+        }
     }
     
     /**
@@ -235,7 +262,7 @@ public class SpellingBeeServiceImpl implements SpellingBeeService {
         final String GET_DICTIONARY_DATA_FOR_WORD = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/"
                 + wordStr
                 + "?key="
-                + apiKey;
+                + apiKeyDao.getMerriamWebsterAPIKey();
         
         // Get JSON response from Dictionary API
         RestTemplate restTemplate = new RestTemplate();

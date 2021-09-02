@@ -5,14 +5,23 @@
  */
 package com.aaw.spellingbee.service;
 
+import com.aaw.spellingbee.model.Attempt;
+import com.aaw.spellingbee.model.Guess;
+import com.aaw.spellingbee.model.Quiz;
+import com.aaw.spellingbee.model.Word;
+import com.aaw.spellingbee.model.WordVariant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -24,6 +33,22 @@ public class SpellingBeeServiceImplTest {
     
     @Autowired
     SpellingBeeService service;
+    
+    Quiz quiz1;
+    Quiz quiz2;
+    Word word1;
+    Word word2;
+    Word word3;
+    Attempt attempt1;
+    Attempt attempt2;
+    WordVariant word1Variant1;
+    WordVariant word2Variant1;
+    WordVariant word2Variant2;
+    Guess guess1;
+    Guess guess2;
+    Guess guess3;
+    Guess guess4;
+    Guess guess5;
     
     public SpellingBeeServiceImplTest() {
     }
@@ -38,6 +63,100 @@ public class SpellingBeeServiceImplTest {
     
     @BeforeEach
     public void setUp() {
+        
+        // Create words
+        word1 = new Word();
+        word1.setHeadword("acknowledgment");
+        word1.setWordId("acknowledgment");
+        word1.setDefinition("definition");
+        word1.setExampleUsage("example");
+        word1.setOffensive(true);
+        word1.addPronunciationURL("URL");
+        
+        word2 = new Word();
+        word2.setHeadword("kabbalah");
+        word2.setWordId("kabbalah");
+        word2.setDefinition("definition");
+        word2.setExampleUsage("example");
+        word2.setOffensive(true);
+        word2.addPronunciationURL("URL");
+        
+        word3 = new Word();
+        word3.setHeadword("fantastic");
+        word3.setWordId("fantastic:1");
+        word3.setDefinition("definition");
+        word3.setExampleUsage("example");
+        word3.setOffensive(true);
+        word3.addPronunciationURL("URL");
+        
+        // Create wordvariants and add to Word objects
+        // acknowledgment : acknowledgement
+        word1Variant1 = new WordVariant();
+        word1Variant1.setWordId(word1.getWordId());
+        word1Variant1.setWordVariant("acknowledgement");
+        
+        // kabbalah: kabbala or kabala
+        word2Variant1 = new WordVariant();
+        word2Variant1.setWordId(word2.getWordId());
+        word2Variant1.setWordVariant("kabbala");
+        
+        word2Variant2 = new WordVariant();
+        word2Variant2.setWordId(word2.getWordId());
+        word2Variant2.setWordVariant("kabala");
+        
+        // Link variants to words
+        word1.setWordVariants(new ArrayList<>(Arrays.asList(word1Variant1)));
+        word2.setWordVariants(new ArrayList<>(Arrays.asList(word2Variant1, word2Variant2)));
+        word3.setWordVariants(new ArrayList<>());
+        
+        // Create first quiz, don't add yet
+        quiz1 = new Quiz();
+        quiz1.setQuizId(1);
+        quiz1.setWords(new ArrayList<>(Arrays.asList(word1, word2)));
+        
+        attempt1 = new Attempt();
+        attempt1.setAttemptId(1);
+        attempt1.setAttemptDate(LocalDate.now());
+        attempt1.setPercentScore(40f);
+        
+        guess1 = new Guess();
+        guess1.setGuess("acknowledgment");
+        guess1.setGuessId(1);
+        guess1.setIsCorrect(true);
+        guess1.setWordId(word1.getWordId());
+        
+        guess2 = new Guess();
+        guess2.setGuess("cobbola");
+        guess2.setGuessId(2);
+        guess2.setIsCorrect(false);
+        guess2.setWordId(word2.getWordId());
+        
+        attempt1.setGuesses(new ArrayList<>(Arrays.asList(guess1, guess2)));
+        quiz1.setAttempts(new ArrayList<>(Arrays.asList(attempt1)));
+        
+        // Create second Quiz, don't add yet
+        guess3 = new Guess();
+        guess4 = new Guess();
+        guess5 = new Guess();
+        guess3.setIsCorrect(true);
+        guess4.setIsCorrect(true);
+        guess5.setIsCorrect(true);
+        guess3.setWordId(word1.getWordId());
+        guess4.setWordId(word2.getWordId());
+        guess5.setWordId(word3.getWordId());
+        guess3.setGuess(word1.getHeadword());
+        guess4.setGuess(word2.getHeadword());
+        guess5.setGuess(word3.getHeadword());
+        
+        Attempt attempt2 = new Attempt();
+        attempt2.setAttemptDate(LocalDate.now());
+        attempt2.setPercentScore(100f);
+        attempt2.setGuesses(new ArrayList<>(Arrays.asList(guess3, guess4, guess5)));
+        
+        quiz2 = new Quiz();
+        quiz2.setWords(new ArrayList<>(Arrays.asList(word1, word2, word3)));
+        quiz2.setAttempts(new ArrayList<>(Arrays.asList(attempt2)));
+        
     }
     
     @AfterEach
@@ -49,13 +168,24 @@ public class SpellingBeeServiceImplTest {
      */
     @Test
     public void testGetNumQuizWords() {
+        int expectedNum = 5;
+        int fromDao = service.getNumQuizWords();
+        assertEquals(expectedNum, fromDao);
     }
 
     /**
-     * Test of getQuiz method, of class SpellingBeeServiceImpl.
+     * Test of addQuiz and getQuiz methods, of class SpellingBeeServiceImpl.
      */
     @Test
-    public void testGetQuiz() {
+    public void testAddGetQuiz() {
+        
+        quiz1 = service.addQuiz(quiz1);
+        Quiz quizFromService = service.getQuiz(quiz1.getQuizId());
+        assertNotNull(quizFromService);
+        assertEquals(quiz1.getQuizId(), quizFromService.getQuizId());
+        assertEquals(quiz1.getWords(), quizFromService.getWords());
+        assertEquals(quiz1.getAttempts(), quizFromService.getAttempts());
+        
     }
 
     /**
@@ -66,17 +196,10 @@ public class SpellingBeeServiceImplTest {
     }
 
     /**
-     * Test of addQuiz method, of class SpellingBeeServiceImpl.
+     * Test of getAllPartialOrCompleteAttempts method, of class SpellingBeeServiceImpl.
      */
     @Test
-    public void testAddQuiz() {
-    }
-
-    /**
-     * Test of getAllAttempts method, of class SpellingBeeServiceImpl.
-     */
-    @Test
-    public void testGetAllAttempts() {
+    public void testGetAllPartialOrCompleteAttempts() {
     }
 
     /**
@@ -119,7 +242,27 @@ public class SpellingBeeServiceImplTest {
      */
     @Test
     public void testGenerateQuiz() {
-        
+    }
+
+    /**
+     * Test of createWordFromJSON method, of class SpellingBeeServiceImpl.
+     */
+    @Test
+    public void testCreateWordFromJSON() {
+    }
+
+    /**
+     * Test of hideWord method, of class SpellingBeeServiceImpl.
+     */
+    @Test
+    public void testHideWord() {
+    }
+
+    /**
+     * Test of createAttempt method, of class SpellingBeeServiceImpl.
+     */
+    @Test
+    public void testCreateAttempt() {         
         String jsonStrFail1 = "[\"Esd\",\"lad\",\"lade\",\"lads\",\"lady\",\"ldg\",\"ldr\",\"leaf\",\"led\",\"lede\",\"lid\",\"lido\",\"lids\",\"lief\",\"lndg\",\"loaf\",\"lode\",\"ltd\",\"lude\",\"luff\"]";
         String jsonStrFail2 = "[{\"meta\":{\"id\":\"parasiticidal\",\"uuid\":\"9cff23bd-7000-4f7f-a930-b9d85e354ec5\",\"sort\":\"160064000\",\"src\":\"collegiate\",\"section\":\"alpha\",\"stems\":[\"parasiticidal\",\"parasiticide\",\"parasiticides\"],\"offensive\":false},\"hwi\":{\"hw\":\"par*a*sit*i*cid*al\",\"prs\":[{\"mw\":\"\\u02ccper-\\u0259-\\u02ccsi-t\\u0259-\\u02c8s\\u012b-d\\u1d4al\",\"sound\":{\"audio\":\"parasi05\",\"ref\":\"c\",\"stat\":\"1\"}},{\"mw\":\"\\u02ccpa-r\\u0259-\"}]},\"fl\":\"adjective\",\"def\":[{\"sseq\":[[[\"sense\",{\"dt\":[[\"text\",\"{bc}destructive to {a_link|parasites}\"]]}]]]}],\"uros\":[{\"ure\":\"par*a*sit*i*cide\",\"prs\":[{\"mw\":\"\\u02ccper-\\u0259-\\u02c8si-t\\u0259-\\u02ccs\\u012bd\",\"sound\":{\"audio\":\"parasi06\",\"ref\":\"c\",\"stat\":\"1\"}},{\"mw\":\"\\u02ccpa-r\\u0259-\"}],\"fl\":\"noun\"}],\"date\":\"1892\",\"shortdef\":[\"destructive to parasites\"]}]";
         String jsonStrFail3 = "[{\"meta\":{\"id\":\"axletree\",\"uuid\":\"8a35ae9d-a691-490c-a862-61236ea30c44\",\"sort\":\"015074000\",\"src\":\"collegiate\",\"section\":\"alpha\",\"stems\":[\"axletree\",\"axletrees\"],\"offensive\":false},\"hwi\":{\"hw\":\"ax*le*tree\",\"prs\":[{\"mw\":\"\\u02c8ak-s\\u0259l-(\\u02cc)tr\\u0113\",\"sound\":{\"audio\":\"axletr01\",\"ref\":\"c\",\"stat\":\"1\"}}]},\"fl\":\"noun\",\"def\":[{\"sseq\":[[[\"sense\",{\"dt\":[[\"text\",\"{bc}{sx|axle||1b(1)}\"]]}]]]}],\"et\":[[\"text\",\"Middle English {it}axeltre{\\/it}, from Old Norse {it}\\u01ebxultr\\u0113{\\/it}, from {it}\\u01ebxull{\\/it} axle + {it}tr\\u0113{\\/it} tree\"]],\"date\":\"14th century\",\"shortdef\":[\"axle\"]}]";
@@ -130,28 +273,20 @@ public class SpellingBeeServiceImplTest {
         String wordFail3 = "axletrees";
         String wordPass1 = "tedious";
         String wordPass2 = "battlefronts";
-        
-//        // Pass
-//        DictionaryEntry passEntry1 = service.getDictionaryEntry(wordPass1, jsonStrPass1);
-//        assertNotNull(passEntry1);
-//        
-//        // Pass
-//        DictionaryEntry passEntry2 = service.getDictionaryEntry(wordPass2, jsonStrPass2);
-//        assertNotNull(passEntry2);
-//        
-//        // Fail
-//        DictionaryEntry failEntry3 = service.getDictionaryEntry(wordFail3, jsonStrFail3);
-//        assertNull(failEntry3);
-//        
-//        // Fail
-//        DictionaryEntry failEntry2 = service.getDictionaryEntry(wordFail2, jsonStrFail2);
-//        assertNull(failEntry2);
-//        
-//        // Fail
-//        DictionaryEntry failEntry1 = service.getDictionaryEntry(wordFail1, jsonStrFail1);
-//        assertNull(failEntry1);
-        
-        
+    }
+
+    /**
+     * Test of isGuessCorrect method, of class SpellingBeeServiceImpl.
+     */
+    @Test
+    public void testIsGuessCorrect() {
+    }
+
+    /**
+     * Test of addGuess method, of class SpellingBeeServiceImpl.
+     */
+    @Test
+    public void testAddGuess() {
     }
     
 }

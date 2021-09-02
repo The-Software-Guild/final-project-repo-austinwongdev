@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" type="text/css" href="css/quizResult.css">
+    <link rel="stylesheet" type="text/css" href="css/spellingBeeDefault.css">
     
     <title>Quiz Results</title>
   </head>
@@ -19,12 +19,12 @@
     <div class="container">
         
         <!-- Title and Menu -->
-        <div class="row m-4">
+        <div class="row m-2">
             <div class="col text-center">
                 <h1><a href="/">Spelling Bee</a></h1>
             </div>
         </div>
-        <div class="row m-4">
+        <div class="row m-2">
             <div class="col text-center m-2">
                 <a href="takeQuiz?quizId=0" class="btn btn-outline-primary btn-lg">New Quiz</a>
             </div>
@@ -36,28 +36,28 @@
         <hr>
         
         <!-- Quiz results as text-->
-        <div class="row m-4">
+        <div class="row m-2">
             <div class="col text-left h3">
                 <span th:text="'Quiz #' + ${attempt.quizId}" id="quizDetailsButton">Quiz Results</span>
             </div>
         </div>
         <div id="quizDetails">
-            <div class="row m-4">
+            <div class="row m-2">
                 <div class="col text-left m-2">
                     <span th:text="${#temporals.format(attempt.attemptDate, 'M/d/yyyy')}">Date</span>
                 </div>
             </div>
-            <div class="row m-4">
+            <div class="row m-2">
                 <div class="col text-left m-2">
                     <span th:text="${#numbers.formatDecimal(attempt.percentScore,0,0)}+'%'">Score</span>
                 </div>
             </div>
-            <div class="row m-4">
+            <div class="row m-2">
                 <div class="col text-left m-2">
                     <span th:text="'Correct: ' + ${attempt.numCorrect}"># Correct</span>
                 </div>
             </div>
-            <div class="row m-4">
+            <div class="row m-2">
                 <div class="col text-left m-2">
                     <span th:text="'Incorrect: ' + ${attempt.numIncorrect}"># Incorrect</span>
                 </div>
@@ -66,20 +66,22 @@
         
         
         <!-- Table showing Words alongside Guesses -->
-        <div class="row m-4">
+        <div class="row m-2">
             <div class="col text-center m-3">
                 <table class="table table-striped table-hover">
                     <thead>
                         <tr>
-                            <!--<th>#</th>-->
                             <th>Word</th>
                             <th>Guess</th>
+                            <th>Variants</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="guess : ${guesses}">
+                        <tr th:each="guess : ${guesses}" class="guessTableRow">
                             <td th:text="${guess.correctSpelling}">Word</td>
-                            <td th:text="${guess.guess}">Guess</td>
+                            <td th:text="${guess.guess}" class="guessGuess">Guess</td>
+                            <td th:text="${guess.wordVariantsStr}">Variants</td>
+                            <td class="isCorrect" th:text="${guess.isCorrect}" hidden/>
                         </tr>
                     </tbody>
                 </table>

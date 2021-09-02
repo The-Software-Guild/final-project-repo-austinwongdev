@@ -1,5 +1,7 @@
 $(document).ready(function () {
-    $('#quizDetailsButton').on('click', function(){
-        $('#quizDetails').toggle('slow');
+    $('.guessTableRow').each(function(){
+        if ($(this).find("td.isCorrect").text() === 'false'){
+            $(this).find("td.guessGuess").css({'color':'firebrick', 'font-weight': 'bold'});
+        }
     });
 });
